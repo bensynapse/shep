@@ -229,6 +229,19 @@ export class GitPrService implements IGitPrService {
       await this.execFile('gh', ['pr', 'merge', String(prNumber), `--${strategy}`], {
         cwd,
       });
+      // A successful command can mean "queued" or "auto-merge enabled".
+      // Confirm the remote state before callers destroy the worktree or branch.
+      const { stdout } = await this.execFile(
+        'gh',
+        ['pr', 'view', String(prNumber), '--json', 'state', '--jq', '.state'],
+        { cwd }
+      );
+      if (stdout.trim() !== 'MERGED') {
+        throw new Error(
+          `PR #${prNumber} has not been confirmed merged (state: ${stdout.trim() || 'unknown'}). ` +
+            'It may be waiting in the merge queue. The branch and worktree have been preserved.'
+        );
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       const cause = error instanceof Error ? error : undefined;
