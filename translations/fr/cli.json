@@ -119,7 +119,11 @@
       "nodeVersionLabel": "Version Node",
       "dbPathLabel": "Chemin BD",
       "logFileLabel": "Fichier journal",
-      "daemonConfigLabel": "Configuration du démon"
+      "daemonConfigLabel": "Configuration du démon",
+      "buildLabel": "Build",
+      "gitShaLabel": "SHA Git",
+      "healthLabel": "Disponibilité",
+      "osLabel": "SE"
     },
     "ui": {
       "description": "Démarrer l'interface web Shep",

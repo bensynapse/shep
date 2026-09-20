@@ -119,7 +119,11 @@
       "nodeVersionLabel": "Версія Node",
       "dbPathLabel": "Шлях до БД",
       "logFileLabel": "Файл журналу",
-      "daemonConfigLabel": "Конфігурація демона"
+      "daemonConfigLabel": "Конфігурація демона",
+      "buildLabel": "Збірка",
+      "gitShaLabel": "Git SHA",
+      "healthLabel": "Готовність",
+      "osLabel": "ОС"
     },
     "ui": {
       "description": "Запустити веб-інтерфейс Shep",

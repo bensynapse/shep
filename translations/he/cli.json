@@ -119,7 +119,11 @@
       "nodeVersionLabel": "גרסת Node",
       "dbPathLabel": "נתיב מסד נתונים",
       "logFileLabel": "קובץ יומן",
-      "daemonConfigLabel": "הגדרת תהליך"
+      "daemonConfigLabel": "הגדרת תהליך",
+      "buildLabel": "בילד",
+      "gitShaLabel": "Git SHA",
+      "healthLabel": "מוכנות",
+      "osLabel": "מערכת הפעלה"
     },
     "ui": {
       "description": "הפעל את ממשק ה-Web של Shep",
