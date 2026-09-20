@@ -8,6 +8,7 @@ The user requests a comprehensive review followed by implementation of findings 
 - Keep application creation, imports, deployment status and route navigation functional.
 - Supply working colocated stories, desktop/mobile light/dark screenshots and browser interaction evidence.
 - Run project checks and disclose remaining failures and unavailable environments precisely.
+- Review every web route and its reachable menus, forms and representative data states in light and dark themes. Repair shared artwork, keyboard accessibility, responsive layout and feedback defects demonstrated by the expanded UI review; preserve the existing visual language.
 
 ## Boundaries
 Use existing components and domain types. Do not add providers, deploy, publish, overwrite existing work, or mutate live user data. Features proposed during review must solve demonstrated workflow friction. Local implementation is authorized by the user without phase approval pauses.

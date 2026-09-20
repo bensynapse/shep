@@ -1,5 +1,13 @@
 # Lessons Learned
 
+## Verify shared artwork and complete pages in both themes
+
+A successful page load and an automated accessibility scan do not prove visual
+quality. Inspect every shared logo in light and dark mode, check image decoding,
+and exercise the complete page at desktop, narrow mobile and browser zoom sizes.
+Record route and interaction coverage explicitly before describing a UI review
+as complete; an Applications-only screenshot cannot verify Control Center.
+
 ## Check ownership before committing in a shared checkout
 
 Re-read Git status and the index before every commit. Stage only paths whose

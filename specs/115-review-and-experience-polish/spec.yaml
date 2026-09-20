@@ -1,10 +1,10 @@
 name: review-and-experience-polish
 number: 115
 branch: feat/115-review-and-experience-polish
-oneLiner: Audit Shep, repair verified failures, and refine the application workspace
+oneLiner: Audit Shep, repair verified failures, and refine the web experience
 summary: >-
   Comprehensive review of the current working tree, with tested repairs and an accessible, polished
-  application workspace. Preserve existing work and settings-driven agent resolution.
+  web experience. Preserve existing work and settings-driven agent resolution.
 phase: Implementation
 sizeEstimate: L
 technologies:
@@ -41,6 +41,10 @@ content: >
   evidence.
 
   - Run project checks and disclose remaining failures and unavailable environments precisely.
+
+  - Review every web route and its reachable menus, forms and representative data states in light
+  and dark themes. Repair shared artwork, keyboard accessibility, responsive layout and feedback
+  defects demonstrated by the expanded UI review; preserve the existing visual language.
 
 
   ## Boundaries

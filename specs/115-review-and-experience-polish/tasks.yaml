@@ -1,6 +1,6 @@
 name: review-and-experience-polish
 phase: Implementation
-summary: Four dependency-ordered review, implementation and verification tasks.
+summary: Five dependency-ordered review, implementation and verification tasks.
 tasks:
   - id: task-1
     phaseId: phase-1
@@ -73,6 +73,24 @@ tasks:
         - Fix confirmed defects and rerun affected scenarios
       refactor:
         - Preserve existing contracts and record evidence and environment limits
+  - id: task-5
+    phaseId: phase-5
+    title: Review and repair the complete web experience
+    state: Done
+    dependencies:
+      - task-4
+    acceptanceCriteria:
+      - Agent and editor artwork decodes and remains visible in both themes
+      - All web routes and key interactions have an explicit tested coverage inventory
+      - Reproduced responsive, accessibility and interaction defects have regression coverage
+      - Quality gates pass and the latest local browser instance runs the verified build
+    tdd:
+      red:
+        - Capture baseline browser failures and add focused regression tests before fixes
+      green:
+        - Repair verified shared-component and workflow defects
+      refactor:
+        - Reuse design-system primitives and verify every affected consumer
 content: >
   ## Acceptance
 
@@ -84,11 +102,18 @@ content: >
   ## Completed verification
 
 
-  The final full suites passed 1,057 unit files / 12,606 tests and 152 integration files / 1,749
-  tests with no expected failures. All 29 standard browser scenarios passed without skips, and 87
-  CLI/TUI end-to-end tests passed. Release and Storybook builds, root and web typechecks, lint,
-  formatting, story coverage and the frozen lockfile install passed. Twelve dependency traversal
-  regressions pass with pinned local patches; the four raw version-based audit matches remain
-  visible and are documented. See [the review record](evidence/review-report.yaml) for fixes,
-  coverage, provenance and environment limits.
+  The latest full suites passed 1,062 unit files / 12,631 tests and 152 integration files / 1,749
+  tests with no expected failures. All 73 browser scenarios passed without skips. The UI review
+  recorded 43 routes in 172 light/dark desktop/phone views, 32 additional viewport checks and 13
+  interaction groups. Release and Storybook builds, root and web typechecks, lint, formatting,
+  story coverage and spec validation passed. A final mobile spacing adjustment passed 21 setup
+  unit tests and production geometry checks. The latest release is running on port 4050, with
+  four production screenshots and authenticated readiness checks. See
+  [the UI review record](evidence/ui-experience-review.yaml) for coverage and limitations.
+
+
+  The earlier review also passed 87 CLI/TUI tests and a frozen-lockfile install. Twelve dependency
+  traversal regressions pass with pinned local patches; four raw version-based audit matches
+  remain visible and documented. See [the earlier review record](evidence/review-report.yaml) for
+  those fixes, provenance and environment limits.
 totalEstimate: L
