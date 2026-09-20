@@ -24,6 +24,7 @@ import type {
 import type { SpawnFunction } from '../types.js';
 import { EventChannel } from '../../streaming/event-channel.js';
 import { createExecutorLogger, type ExecutorLogger } from './executor-logger.js';
+import { describeSubprocessFailure } from './subprocess-failure-message.js';
 import {
   buildSpawnOptions,
   classifySpawnError,
@@ -162,7 +163,13 @@ export class ClineExecutorService implements IAgentExecutor {
           }
 
           if (code !== 0 && code !== null) {
-            reject(new Error(stderr.text().trim() || `Process exited with code ${code}`));
+            // The CLI's own result text names the cause; stderr carries setup
+            // diagnostics that healthy runs emit too.
+            reject(
+              new Error(
+                describeSubprocessFailure({ code, resultText: finalText, stderr: stderr.text() })
+              )
+            );
             return;
           }
 

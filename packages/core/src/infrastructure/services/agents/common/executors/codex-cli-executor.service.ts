@@ -26,6 +26,7 @@ import type {
 import type { SpawnFunction } from '../types.js';
 import { EventChannel } from '../../streaming/event-channel.js';
 import { createExecutorLogger, type ExecutorLogger } from './executor-logger.js';
+import { describeSubprocessFailure } from './subprocess-failure-message.js';
 import {
   buildSpawnOptions,
   classifySpawnError,
@@ -232,13 +233,10 @@ export class CodexCliExecutorService implements IAgentExecutor {
             }
 
             if (code !== 0 && code !== null) {
-              const detail = stderr.text().trim();
+              // The CLI names its own reason in the result text; stderr is
+              // setup diagnostics that healthy runs emit too.
               reject(
-                new Error(
-                  detail
-                    ? `Process exited with code ${code}: ${detail}`
-                    : `Process exited with code ${code}`
-                )
+                new Error(describeSubprocessFailure({ code, resultText, stderr: stderr.text() }))
               );
               return;
             }
@@ -448,12 +446,9 @@ export class CodexCliExecutorService implements IAgentExecutor {
         accumulator.flush();
 
         if (code !== 0 && code !== null) {
-          const detail = stderr.text().trim();
           channel.push({
             type: 'error',
-            content: detail
-              ? `Process exited with code ${code}: ${detail}`
-              : `Process exited with code ${code}`,
+            content: describeSubprocessFailure({ code, resultText, stderr: stderr.text() }),
             timestamp: new Date(),
           });
         } else if (!resultText) {
@@ -503,7 +498,6 @@ export class CodexCliExecutorService implements IAgentExecutor {
     tempSchemaPath: string | undefined,
     log: ExecutorLogger
   ): ReturnType<SpawnFunction> {
-    const isResume = !!options?.resumeSession;
     const args = this.buildArgs(prompt, options, tempSchemaPath);
     const spawnOpts = this.buildSpawnOptions();
 
@@ -514,22 +508,19 @@ export class CodexCliExecutorService implements IAgentExecutor {
 
     const proc = this.spawn(CODEX_BINARY, args, spawnOpts);
     log(`Subprocess PID: ${proc.pid ?? 'undefined (spawn may have failed)'}`);
-    log(
-      `Prompt length: ${prompt.length} chars${isResume ? ' (positional arg for resume)' : ' (piped via stdin)'}`
-    );
+    log(`Prompt length: ${prompt.length} chars (piped via stdin)`);
     // Log the actual prompt for debugging (truncate very long prompts)
     const promptPreview = prompt.length > 500 ? `${prompt.slice(0, 497)}...` : prompt;
     log(`[text] Prompt: ${promptPreview.replace(/\n/g, ' ')}`);
 
-    // For initial executions, pipe the prompt via stdin; for resume it is
-    // already in the CLI args. The error handler matters: the CLI exits early
-    // on a bad flag or an auth failure, and the resulting EPIPE would
-    // otherwise take the whole worker down instead of failing this run.
-    if (!isResume) {
-      writePromptToStdin(proc, prompt, (error) =>
-        log(`stdin closed before the prompt was written (${error.code ?? error.message})`)
-      );
-    }
+    // Codex accepts `-` for both initial and resumed prompts, so user input is
+    // piped on every path and never reaches argv. The error handler matters:
+    // the CLI exits early on a bad flag or an auth failure, and the resulting
+    // EPIPE would otherwise take the whole worker down instead of failing this
+    // run.
+    writePromptToStdin(proc, prompt, (error) =>
+      log(`stdin closed before the prompt was written (${error.code ?? error.message})`)
+    );
 
     return proc;
   }
@@ -647,7 +638,7 @@ export class CodexCliExecutorService implements IAgentExecutor {
    * For resume: `codex exec resume <threadId> "prompt" --json --sandbox danger-full-access ...`
    */
   private buildArgs(
-    prompt: string,
+    _prompt: string,
     options?: AgentExecutionOptions,
     tempSchemaPath?: string
   ): string[] {
@@ -665,8 +656,11 @@ export class CodexCliExecutorService implements IAgentExecutor {
     if (tempSchemaPath) baseFlags.push('--output-schema', tempSchemaPath);
 
     if (options?.resumeSession) {
-      // Resume mode: codex exec resume <threadId> "prompt" [flags]
-      return ['exec', 'resume', options.resumeSession, prompt, ...baseFlags];
+      // Current Codex CLI treats `resume` as an exec subcommand, so exec-level
+      // flags (--sandbox, --cd, --color) must appear BEFORE it. The trailing
+      // `-` reads the resumed prompt from stdin, which also keeps user input
+      // out of argv.
+      return ['exec', ...baseFlags, 'resume', options.resumeSession, '-'];
     }
 
     // Initial execution: codex exec - [flags]

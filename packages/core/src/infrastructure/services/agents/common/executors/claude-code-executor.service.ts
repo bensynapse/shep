@@ -33,6 +33,7 @@ import {
   validateSecurityConstraints,
   type ExecutorCapabilities,
 } from './security-constraint-validator.js';
+import { describeSubprocessFailure } from './subprocess-failure-message.js';
 
 /** Binary name on PATH. */
 const CLAUDE_BINARY = 'claude';
@@ -230,7 +231,12 @@ export class ClaudeCodeExecutorService implements IAgentExecutor {
 
         settle(() => {
           if (code !== 0 && code !== null) {
-            reject(new Error(stderr.text().trim() || `Process exited with code ${code}`));
+            // The CLI reports WHY it failed in its final result text; stderr
+            // carries setup diagnostics that healthy runs emit too, so leading
+            // with stderr names the wrong cause.
+            reject(
+              new Error(describeSubprocessFailure({ code, resultText, stderr: stderr.text() }))
+            );
             return;
           }
 

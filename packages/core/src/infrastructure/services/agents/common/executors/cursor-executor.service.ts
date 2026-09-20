@@ -23,6 +23,7 @@ import type { SpawnFunction } from '../types.js';
 import { IS_WINDOWS } from '../../../../platform.js';
 import { EventChannel } from '../../streaming/event-channel.js';
 import { createExecutorLogger, type ExecutorLogger } from './executor-logger.js';
+import { describeSubprocessFailure } from './subprocess-failure-message.js';
 import {
   buildSpawnOptions,
   classifySpawnError,
@@ -229,7 +230,13 @@ export class CursorExecutorService implements IAgentExecutor {
           }
 
           if (code !== 0 && code !== null) {
-            reject(new Error(stderr.text().trim() || `Process exited with code ${code}`));
+            // Cursor reports its own reason in the result text; stderr is
+            // secondary detail, not the cause.
+            reject(
+              new Error(
+                describeSubprocessFailure({ code, resultText: finalText, stderr: stderr.text() })
+              )
+            );
             return;
           }
 
