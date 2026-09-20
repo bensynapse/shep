@@ -224,7 +224,7 @@ describe('GitPrService', () => {
 
       await service.push('/repo', 'feat/my-branch');
 
-      expect(mockExec).toHaveBeenCalledWith('git', ['push', 'origin', 'feat/my-branch'], {
+      expect(mockExec).toHaveBeenCalledWith('git', ['push', 'origin', '--', 'feat/my-branch'], {
         cwd: '/repo',
       });
     });
@@ -236,7 +236,7 @@ describe('GitPrService', () => {
 
       expect(mockExec).toHaveBeenCalledWith(
         'git',
-        ['push', '--set-upstream', 'origin', 'feat/my-branch'],
+        ['push', '--set-upstream', 'origin', '--', 'feat/my-branch'],
         { cwd: '/repo' }
       );
     });
@@ -401,7 +401,7 @@ describe('GitPrService', () => {
       await service.mergeBranch('/repo', 'feat/my-branch', 'main');
 
       expect(mockExec).toHaveBeenNthCalledWith(1, 'git', ['checkout', 'main'], { cwd: '/repo' });
-      expect(mockExec).toHaveBeenNthCalledWith(2, 'git', ['merge', 'feat/my-branch'], {
+      expect(mockExec).toHaveBeenNthCalledWith(2, 'git', ['merge', '--', 'feat/my-branch'], {
         cwd: '/repo',
       });
       expect(mockExec).toHaveBeenNthCalledWith(3, 'git', ['push'], { cwd: '/repo' });
@@ -424,7 +424,9 @@ describe('GitPrService', () => {
 
       await service.deleteBranch('/repo', 'feat/old');
 
-      expect(mockExec).toHaveBeenCalledWith('git', ['branch', '-d', 'feat/old'], { cwd: '/repo' });
+      expect(mockExec).toHaveBeenCalledWith('git', ['branch', '-d', '--', 'feat/old'], {
+        cwd: '/repo',
+      });
       expect(mockExec).toHaveBeenCalledTimes(1);
     });
 
@@ -433,13 +435,13 @@ describe('GitPrService', () => {
 
       await service.deleteBranch('/repo', 'feat/old', true);
 
-      expect(mockExec).toHaveBeenNthCalledWith(1, 'git', ['branch', '-d', 'feat/old'], {
+      expect(mockExec).toHaveBeenNthCalledWith(1, 'git', ['branch', '-d', '--', 'feat/old'], {
         cwd: '/repo',
       });
       expect(mockExec).toHaveBeenNthCalledWith(
         2,
         'git',
-        ['push', 'origin', '--delete', 'feat/old'],
+        ['push', 'origin', '--delete', '--', 'feat/old'],
         {
           cwd: '/repo',
         }
@@ -534,7 +536,7 @@ describe('GitPrService', () => {
       expect(mockExec).toHaveBeenNthCalledWith(
         2,
         'gh',
-        ['pr', 'checks', 'feat/branch', '--json', 'bucket,state,name'],
+        ['pr', 'checks', '--json', 'bucket,state,name', '--', 'feat/branch'],
         { cwd: '/repo' }
       );
       expect(result.status).toBe('failure');
@@ -1154,7 +1156,7 @@ describe('GitPrService', () => {
       expect(result).toBe(true);
       expect(mockExec).toHaveBeenCalledWith(
         'git',
-        ['merge-base', '--is-ancestor', 'feat/test', 'main'],
+        ['merge-base', '--is-ancestor', '--', 'feat/test', 'main'],
         { cwd: '/repo' }
       );
     });
@@ -1264,7 +1266,7 @@ describe('GitPrService', () => {
 
       await service.localMergeSquash('/repo', 'feat/test', 'main', 'merge commit msg');
 
-      expect(mockExec).toHaveBeenCalledWith('git', ['merge', '--squash', 'feat/test'], {
+      expect(mockExec).toHaveBeenCalledWith('git', ['merge', '--squash', '--', 'feat/test'], {
         cwd: '/repo',
       });
     });
