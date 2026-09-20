@@ -1,5 +1,5 @@
 feature: 115-review-and-experience-polish
-status: verification-in-progress
+status: completed-with-documented-limitations
 recoveredSession: 01a0c03e-d507-7391-bab7-d6e9556854bf
 resumedAt: '2026-09-20T20:02:23.419Z'
 scope: >-
@@ -103,8 +103,10 @@ coverage:
       - tests/e2e/tui
       - .coding-agent/runs/ac406ab5205b/verify-browser.cjs
     result: >-
-      Recovered CLI/TUI end-to-end pass: 87 tests. Interrupted broad tests and Storybook build
-      require completion on resume; isolated live settings checks pending.
+      Fresh unit/integration suite: 1205 files and 14320 passing tests, one expected failure.
+      Subsequent messaging/save regression: 16 tests; executor/memory regression: 519 tests.
+      Recovered CLI/TUI end-to-end: 87 passing tests. Fresh browser evidence and isolated
+      language/messaging checks completed.
   - stage: debug
     inspected:
       - tests/integration/infrastructure/services/agents/process-stream-memory.test.ts
@@ -137,14 +139,135 @@ limitations:
   - >-
     Automated accessibility checks and source review cannot establish universal correctness or
     accessibility.
+  - >-
+    The pre-existing PR-merge integration test remains marked it.fails. Its gateway mock reports
+    MERGED without changing git refs; this run does not validate a real remote GitHub merge.
+  - >-
+    The story gate passes with 271 of 338 components covered and 67 pre-existing exemptions.
+    Components changed for this feature retain their stories.
 advisorySources:
   - https://github.com/advisories/GHSA-jmr9-qjv8-65gv
   - https://github.com/advisories/GHSA-7pqw-9j4j-h8q3
   - https://github.com/advisories/GHSA-2q42-4q24-7rgv
 verification:
-  lint: passed after autofix
-  stories: passed
-  executorRegression: 18 files / 519 tests passed; includes bounded-memory integration test
-  broadSuite: running
-  storybookBuild: pending
-  isolatedSettings: pending
+  broadSuite:
+    result: pass
+    files: 1205
+    passed: 14320
+    expectedFailures: 1
+    log: .coding-agent/runs/ac406ab5205b/verification/resumed-tests.log
+  streamRegression:
+    result: pass
+    files: 18
+    tests: 519
+    red: .coding-agent/runs/ac406ab5205b/verification/resumed-stream-red.log
+    green: .coding-agent/runs/ac406ab5205b/verification/resumed-stream-green.log
+  messagingRegression:
+    result: pass
+    files: 2
+    tests: 16
+    red: .coding-agent/runs/ac406ab5205b/verification/resumed-messaging-red.log
+    green: .coding-agent/runs/ac406ab5205b/verification/resumed-messaging-green.log
+  cliTuiE2e:
+    result: pass
+    provenance: recovered session
+    files: 15
+    tests: 87
+    log: .coding-agent/runs/ac406ab5205b/verification/recovered-cli-e2e-final.log
+  applicationsBrowser:
+    result: pass
+    viewports:
+      - desktop-light
+      - desktop-dark
+      - mobile-light
+      - mobile-dark
+      - 320px
+    accessibilityViolations: 0
+    horizontalOverflow: false
+    report: evidence/browser-review.json
+  isolatedSettings:
+    languageTests: 3
+    languageResult: pass
+    messagingTests: 2
+    messagingResult: pass after replacing unreachable external fixture
+    languageLog: .coding-agent/runs/ac406ab5205b/verification/resumed-live-settings.log
+    messagingLog: .coding-agent/runs/ac406ab5205b/verification/resumed-messaging-e2e-green.log
+  releaseBuild:
+    result: pass
+    log: .coding-agent/runs/ac406ab5205b/verification/release-build.log
+  storybookBuild:
+    result: pass after final messaging change
+    log: .coding-agent/runs/ac406ab5205b/verification/final-storybook-build.log
+  qualityGates:
+    result: pass
+    checks:
+      - CLI and web release build
+      - Final production web build after messaging change
+      - Root typecheck
+      - Web typecheck
+      - Production Storybook build
+      - Lint
+      - Prettier formatting
+      - Spec validation
+      - Story coverage
+    log: .coding-agent/runs/ac406ab5205b/verification/final-quality-results.json
+  dependencyAudit:
+    result: 4 high reports, 0 critical/moderate/low; no published patches for remaining reports
+    log: .coding-agent/runs/ac406ab5205b/verification/resumed-audit.json
+fixes:
+  - area: SQLite startup
+    behavior: >-
+      One connection is initialized for concurrent callers; failed integrity/configuration closes
+      the handle and permits retry.
+    tests: tests/unit/infrastructure/persistence/sqlite/connection-lifecycle.test.ts
+  - area: Application readiness
+    behavior: Applications in Error remain failed even when setupComplete is true.
+    tests: tests/unit/application/use-cases/applications/list-applications.use-case.test.ts
+  - area: Settings feedback
+    behavior: >-
+      Failed or overlapping saves never announce Saved; rejected requests report their error and
+      pending state ends. Shared hook now covers both the main settings screen and messaging panel.
+    tests:
+      - tests/unit/presentation/web/hooks/use-settings-save.test.tsx
+      - tests/unit/presentation/web/components/features/settings/messaging-settings-section.test.tsx
+  - area: Applications workspace
+    behavior: >-
+      Search, combined status filters, no-match recovery, visible creation choices, semantic card
+      navigation, folder/import errors and accessible light/dark layouts.
+    tests:
+      - tests/unit/presentation/web/features/applications/applications-page-client.test.tsx
+      - tests/unit/presentation/web/features/applications/application-card-accessibility.test.tsx
+      - evidence/browser-review.json
+  - area: Compiled CLI startup
+    behavior: >-
+      VersionService is registered explicitly instead of letting decorator metadata attempt to
+      inject its optional configuration object; bootstrap reports failures.
+    tests: tests/unit/infrastructure/di/hollow-dependency-guard.test.ts
+  - area: Agent output memory
+    behavior: >-
+      Once an oversized line is rejected, every subsequent partial chunk is discarded until the
+      newline. The next valid line is delivered and the overflow notification occurs once.
+    tests:
+      - tests/integration/infrastructure/services/agents/process-stream-memory.test.ts
+      - tests/unit/infrastructure/services/agents/executors/process-stream.test.ts
+  - area: Messaging browser test
+    behavior: >-
+      A local HTTP gateway fixture exercises real OAuth and route registration requests, replacing
+      the unreachable example.com dependency.
+    tests: tests/e2e/web/messaging-settings.spec.ts
+  - area: Compatibility and quality gates
+    behavior: >-
+      Aligned SDK workspace versions, installed compatible dependency security updates, repaired
+      stale tool-install/translation assertions and story providers, and corrected Next health route
+      configuration.
+    tests: verification logs under .coding-agent/runs/ac406ab5205b/verification
+completedAt: '2026-09-20T20:15:29.803Z'
+branch: feat/115-review-and-experience-polish
+checkedHead: 16fabe93fc3cecd87903699cf0564438ad996485
+notes:
+  - >-
+    Source changes were preserved while another session committed the shared working tree. This
+    resumed session did not run git commit, publish or deploy.
+  - >-
+    The broad suite was followed by targeted tests for the final messaging fix; counts are reported
+    separately to avoid presenting a repeated subset as additional unique passing tests.

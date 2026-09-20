@@ -37,7 +37,7 @@ tasks:
   - id: task-3
     phaseId: phase-3
     title: Browser verification and quality gates
-    state: WIP
+    state: Done
     dependencies:
       - task-2
     acceptanceCriteria:
@@ -56,4 +56,15 @@ content: >
 
   Tests, story rendering, screenshots and quality-gate logs are recorded in evidence and the review
   run. No claim of universal correctness is implied.
+
+
+  ## Completed verification
+
+
+  The recovered review and UI work is complete. The broad suite passed 1,205 files and 14,320 tests
+  with one pre-existing expected failure. The final messaging fix passed 16 focused tests and two
+  live browser scenarios; three language-switching scenarios also passed. Executor and memory
+  regressions passed 519 tests. Release, final web and Storybook builds, type checks, lint,
+  formatting and story coverage passed. See [the review record](evidence/review-report.yaml) for
+  evidence, coverage and the four remaining upstream dependency advisories.
 totalEstimate: L
