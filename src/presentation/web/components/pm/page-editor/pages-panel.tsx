@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { Plus, FileText, Trash2, Star, StarOff, ChevronRight } from 'lucide-react';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -79,6 +80,8 @@ export function PagesPanel({ projectId, pages: initialPages, className }: PagesP
       if (!result.error) {
         setPages((prev) => prev.filter((p) => p.id !== pageId));
         if (selectedPageId === pageId) setSelectedPageId(null);
+      } else {
+        toast.error(result.error);
       }
     },
     [selectedPageId]
@@ -160,6 +163,7 @@ export function PagesPanel({ projectId, pages: initialPages, className }: PagesP
                 handleDelete(page.id);
               }}
               title="Delete page"
+              data-testid={`delete-page-${page.id}`}
             >
               <Trash2 className="h-2.5 w-2.5" />
             </Button>

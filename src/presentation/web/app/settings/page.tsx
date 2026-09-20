@@ -6,10 +6,8 @@ import { SettingsPageClient } from '@/components/features/settings/settings-page
 export const dynamic = 'force-dynamic';
 
 export default async function SettingsPage() {
-  const [{ settings, shepHome, dbFileSize, error }, availableTerminals] = await Promise.all([
-    loadSettings(),
-    getAvailableTerminals(),
-  ]);
+  const [{ settings, secrets, shepHome, dbFileSize, error }, availableTerminals] =
+    await Promise.all([loadSettings(), getAvailableTerminals()]);
 
   if (error || !settings) {
     return (
@@ -23,6 +21,7 @@ export default async function SettingsPage() {
     <div className="flex h-full flex-col px-6 pb-6">
       <SettingsPageClient
         settings={settings}
+        secrets={secrets}
         shepHome={shepHome ?? ''}
         dbFileSize={dbFileSize ?? 'Unknown'}
         availableTerminals={availableTerminals}

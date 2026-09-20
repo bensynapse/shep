@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Check,
   Bot,
@@ -28,7 +28,6 @@ import {
   FolderGit2,
   Plug,
 } from 'lucide-react';
-import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { Label } from '@/components/ui/label';
@@ -42,7 +41,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { updateSettingsAction } from '@/app/actions/update-settings';
+import { useSettingsSave } from '@/hooks/use-settings-save';
 import {
   AgentType,
   AgentAuthMethod,
@@ -86,6 +85,8 @@ import {
   UNLIMITED_PARALLEL_FEATURES,
 } from '@shepai/core/domain/shared/parallel-feature-limit';
 import type { AvailableTerminal } from '@/app/actions/get-available-terminals';
+import type { SettingsSecretPresence } from '@shepai/core/application/use-cases/settings/load-settings.use-case';
+import { secretPlaceholder, secretUpdateValue } from '@/lib/secret-placeholder';
 
 const EDITOR_OPTIONS = [
   { value: EditorType.VsCode, label: 'VS Code' },
@@ -134,58 +135,17 @@ const SECTIONS = [
 ] as const;
 
 export interface SettingsPageClientProps {
+  /**
+   * Credential fields are always `undefined` here — the server masks them in
+   * `LoadSettingsUseCase.executeMasked()`, because client-component props are
+   * serialised whole into the RSC Flight payload embedded in the page HTML.
+   */
   settings: Settings;
+  /** What is stored for each credential, without the values. */
+  secrets?: SettingsSecretPresence;
   shepHome: string;
   dbFileSize: string;
   availableTerminals?: AvailableTerminal[];
-}
-
-function useSaveIndicator() {
-  const { t } = useTranslation('web');
-  const [isPending, startTransition] = useTransition();
-  const [showSaving, setShowSaving] = useState(false);
-  const [showSaved, setShowSaved] = useState(false);
-  const minTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pendingDoneRef = useRef(false);
-
-  // Show "Saving..." with a minimum display time of 600ms
-  useEffect(() => {
-    if (isPending && !showSaving) {
-      setShowSaving(true);
-      pendingDoneRef.current = false;
-      minTimerRef.current = setTimeout(() => {
-        minTimerRef.current = null;
-        if (pendingDoneRef.current) {
-          setShowSaving(false);
-          setShowSaved(true);
-          setTimeout(() => setShowSaved(false), 2000);
-        }
-      }, 350);
-    }
-    if (!isPending && showSaving) {
-      pendingDoneRef.current = true;
-      // If min timer already elapsed, transition now
-      if (!minTimerRef.current) {
-        setShowSaving(false);
-        setShowSaved(true);
-        setTimeout(() => setShowSaved(false), 2000);
-      }
-    }
-  }, [isPending, showSaving]);
-
-  const save = useCallback(
-    (payload: Record<string, unknown>) => {
-      startTransition(async () => {
-        const result = await updateSettingsAction(payload);
-        if (!result.success) {
-          toast.error(result.error ?? t('settings.failedToSave'));
-        }
-      });
-    },
-    [startTransition, t]
-  );
-
-  return { showSaving, showSaved, save };
 }
 
 /* ── Reusable row components ── */
@@ -411,12 +371,13 @@ function SectionHint({
 
 export function SettingsPageClient({
   settings,
+  secrets,
   shepHome,
   dbFileSize,
   availableTerminals,
 }: SettingsPageClientProps) {
   const { t, i18n: i18nInstance } = useTranslation('web');
-  const { showSaving, showSaved, save } = useSaveIndicator();
+  const { showSaving, showSaved, save } = useSettingsSave();
   const featureFlags = settings.featureFlags ?? {
     envDeploy: false,
     debug: false,
@@ -448,7 +409,12 @@ export function SettingsPageClient({
   // Agent state
   const [agentType, setAgentType] = useState(settings.agent.type);
   const [authMethod, setAuthMethod] = useState(settings.agent.authMethod);
-  const [token, setToken] = useState(settings.agent.token ?? '');
+  // Write-only: the stored token never arrives, so the input starts empty and
+  // shows a masked placeholder. `tokenCleared` distinguishes "user emptied the
+  // field on purpose" (write '' and drop the credential) from "user never
+  // touched it" (send undefined, which the settings deep-merge skips).
+  const [token, setToken] = useState('');
+  const [tokenCleared, setTokenCleared] = useState(false);
   const [showToken, setShowToken] = useState(false);
 
   // Environment state
@@ -768,24 +734,19 @@ export function SettingsPageClient({
         <div className="flex items-center gap-2">
           <Settings2 className="text-muted-foreground h-4 w-4" />
           <h1 className="text-sm font-bold tracking-tight">{t('settings.title')}</h1>
-          <span className="relative h-4 w-16">
-            <span
-              className={cn(
-                'text-muted-foreground absolute inset-0 flex items-center text-xs transition-opacity duration-300',
-                showSaving ? 'opacity-100' : 'opacity-0'
-              )}
-            >
-              {t('settings.saving')}
-            </span>
-            <span
-              className={cn(
-                'absolute inset-0 flex items-center gap-1 text-xs text-green-600 transition-opacity duration-300',
-                showSaved && !showSaving ? 'opacity-100' : 'opacity-0'
-              )}
-            >
-              <Check className="h-3 w-3" />
-              {t('settings.saved')}
-            </span>
+          <span
+            role="status"
+            aria-live="polite"
+            className="text-muted-foreground flex h-5 min-w-16 items-center gap-1 text-xs"
+          >
+            {showSaving ? (
+              t('settings.saving')
+            ) : showSaved ? (
+              <>
+                <Check className="size-3 text-green-700 dark:text-green-400" aria-hidden="true" />
+                {t('settings.saved')}
+              </>
+            ) : null}
           </span>
           <nav className="ml-auto flex items-center gap-0.5">
             {visibleSections.map((s) => {
@@ -894,7 +855,10 @@ export function SettingsPageClient({
                     authMethod: newAuth,
                   };
                   if (newAuth === AgentAuthMethod.Token) {
-                    payload.token = token;
+                    const tokenUpdate = secretUpdateValue(token, tokenCleared);
+                    if (tokenUpdate !== undefined) {
+                      payload.token = tokenUpdate;
+                    }
                   }
                   save({ agent: payload });
                 }}
@@ -939,15 +903,19 @@ export function SettingsPageClient({
                     data-testid="agent-token-input"
                     type={showToken ? 'text' : 'password'}
                     value={token}
-                    onChange={(e) => setToken(e.target.value)}
-                    onBlur={() => {
-                      if (token !== (settings.agent.token ?? '')) {
-                        save({
-                          agent: { type: agentType, authMethod, token },
-                        });
-                      }
+                    onChange={(e) => {
+                      setToken(e.target.value);
+                      if (e.target.value.trim().length === 0) setTokenCleared(true);
                     }}
-                    placeholder="Enter your API token"
+                    onBlur={() => {
+                      const tokenUpdate = secretUpdateValue(token, tokenCleared);
+                      if (tokenUpdate === undefined) return;
+                      save({
+                        agent: { type: agentType, authMethod, token: tokenUpdate },
+                      });
+                      setTokenCleared(false);
+                    }}
+                    placeholder={secretPlaceholder(secrets?.agentToken, 'Enter your API token')}
                     className="pe-10 text-xs"
                   />
                   <Button
@@ -977,7 +945,7 @@ export function SettingsPageClient({
               },
               {
                 label: t('settings.agent.links.addingAgents'),
-                href: 'https://github.com/shep-ai/shep/blob/main/docs/development/adding-agents.md',
+                href: 'https://github.com/shep-ai/shep/blob/main/docs/development/adding-agent-types.md',
               },
               {
                 label: t('settings.agent.links.configurationGuide'),
@@ -1880,7 +1848,7 @@ export function SettingsPageClient({
           id="section-messaging"
           className="grid scroll-mt-18 grid-cols-1 gap-x-5 rounded-lg lg:grid-cols-[1fr_280px]"
         >
-          <MessagingSettingsSection messaging={settings.messaging} />
+          <MessagingSettingsSection messaging={settings.messaging} secrets={secrets} />
           <SectionHint
             links={[
               {
@@ -2254,6 +2222,7 @@ export function SettingsPageClient({
             >
               <WhatsAppSettings
                 config={settings.whatsapp}
+                secrets={secrets}
                 onSave={(whatsapp) => save({ whatsapp })}
               />
             </SettingsSection>

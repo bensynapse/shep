@@ -1,22 +1,17 @@
 import type { ComponentType, SVGProps } from 'react';
+import type { AgentType } from '@shepai/core/domain/generated/output';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
-/** Agent type values mirroring the TypeSpec AgentType enum. */
-export type AgentTypeValue =
-  | 'claude-code'
-  | 'codex-cli'
-  | 'copilot-cli'
-  | 'cursor'
-  | 'cline'
-  | 'gemini-cli'
-  | 'aider'
-  | 'continue'
-  | 'openrouter'
-  | 'together-ai'
-  | 'ollama'
-  | 'llmproxy'
-  | 'dev';
+/**
+ * Agent type values.
+ *
+ * This was a hand-written union that "mirrored" the TypeSpec AgentType enum and
+ * had to be edited every time an agent was added. Aliasing the generated enum
+ * makes drift impossible — and because the maps below are total `Record`s over
+ * it, a new agent is a compile error here until it has an icon and a label.
+ */
+export type AgentTypeValue = `${AgentType}`;
 
 type IconProps = SVGProps<SVGSVGElement> & { className?: string };
 
@@ -97,6 +92,7 @@ DevAgentIcon.displayName = 'DevAgentIcon';
 
 const agentTypeIconMap: Record<AgentTypeValue, ComponentType<IconProps>> = {
   'claude-code': createBrandIcon('/icons/agents/claude-ai-icon.svg', 'Claude Code'),
+  'kimi-code': createBrandIcon('/icons/agents/kimi.svg', 'Kimi Code'),
   'codex-cli': createBrandIcon('/icons/agents/openai.svg', 'Codex CLI'),
   'copilot-cli': createBrandIcon('/icons/agents/copilot.svg', 'Copilot CLI'),
   cursor: createBrandIcon('/icons/agents/cursor.jpeg', 'Cursor'),
@@ -114,6 +110,7 @@ const agentTypeIconMap: Record<AgentTypeValue, ComponentType<IconProps>> = {
 /** Human-readable labels for agent types. */
 export const agentTypeLabels: Record<AgentTypeValue, string> = {
   'claude-code': 'Claude Code',
+  'kimi-code': 'Kimi Code',
   'codex-cli': 'Codex CLI',
   'copilot-cli': 'Copilot CLI',
   cursor: 'Cursor',

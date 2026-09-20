@@ -29,6 +29,7 @@ import { useRepositoryCardActions } from './use-repository-card-actions';
 import { RepositoryDeleteDialog } from './repository-delete-dialog';
 import { ChatDotIndicator } from '@/components/features/chat/ChatDotIndicator';
 import { FeatureSessionsDropdown } from '@/components/common/feature-node/feature-sessions-dropdown';
+import { ACTIVATABLE_TITLE_CLASS, useActivatableTitle } from '@/hooks/use-activatable-title';
 
 /** Vertical offset of the edge handles, aligned with the card's first row. */
 const HANDLE_TOP_PX = 70;
@@ -77,6 +78,11 @@ export function RepositoryNode({
     },
     [router]
   );
+
+  const activateTitle = useCallback(() => {
+    data.onClick?.();
+  }, [data]);
+  const titleProps = useActivatableTitle(activateTitle);
 
   return (
     <div
@@ -130,20 +136,11 @@ export function RepositoryNode({
       ) : null}
 
       <div
-        role="button"
-        tabIndex={0}
         data-testid="repository-node-card"
         data-repo-name={data.name}
         onClick={(e) => {
           e.stopPropagation();
           data.onClick?.();
-        }}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            e.stopPropagation();
-            data.onClick?.();
-          }
         }}
         className={cn(
           'nodrag bg-card flex w-[26rem] cursor-pointer flex-col overflow-hidden rounded-xl border shadow-sm transition-[border-color,box-shadow] duration-200 dark:bg-neutral-800/80',
@@ -153,7 +150,13 @@ export function RepositoryNode({
         {/* Row 1: Repository name + action buttons */}
         <div className="flex items-center gap-3 px-4 py-3">
           <Github className="text-muted-foreground h-5 w-5 shrink-0" />
-          <span data-testid="repository-node-name" className="min-w-0 truncate text-sm font-medium">
+          {/* The name — not the card — is the activatable control: the card
+              holds real buttons, which may not be nested inside `role="button"`. */}
+          <span
+            {...titleProps}
+            data-testid="repository-node-name"
+            className={cn('min-w-0 truncate text-sm font-medium', ACTIVATABLE_TITLE_CLASS)}
+          >
             {data.name}
           </span>
 

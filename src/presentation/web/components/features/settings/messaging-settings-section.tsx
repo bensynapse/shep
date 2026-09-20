@@ -25,10 +25,18 @@ import {
   disconnectMessagingAction,
 } from '@/app/actions/messaging';
 import type { MessagingConfig } from '@shepai/core/domain/generated/output';
+import type {
+  SecretPresence,
+  SettingsSecretPresence,
+} from '@shepai/core/application/use-cases/settings/load-settings.use-case';
+import { secretPlaceholder } from '@/lib/secret-placeholder';
 import { MessagingPlatform } from '@shepai/core/domain/generated/output';
 
 export interface MessagingSettingsSectionProps {
+  /** `botToken` / `routeToken` are always `undefined` — the server masks them. */
   messaging?: MessagingConfig;
+  /** What is stored for each credential, without the values. */
+  secrets?: SettingsSecretPresence;
 }
 
 interface PairingSessionState {
@@ -60,7 +68,7 @@ function isValidUrl(value: string): boolean {
   }
 }
 
-export function MessagingSettingsSection({ messaging }: MessagingSettingsSectionProps) {
+export function MessagingSettingsSection({ messaging, secrets }: MessagingSettingsSectionProps) {
   const config = messaging ?? DEFAULT_CONFIG;
 
   const [enabled, setEnabled] = useState(config.enabled);
@@ -282,6 +290,7 @@ export function MessagingSettingsSection({ messaging }: MessagingSettingsSection
           onPair={() => handlePair(MessagingPlatform.Telegram)}
           onDisconnect={() => handleDisconnect(MessagingPlatform.Telegram)}
           onSaveBotToken={(value) => savePlatformBotToken(MessagingPlatform.Telegram, value)}
+          storedBotToken={secrets?.telegramBotToken}
         />
 
         <PlatformRow
@@ -291,6 +300,7 @@ export function MessagingSettingsSection({ messaging }: MessagingSettingsSection
           onPair={() => handlePair(MessagingPlatform.WhatsApp)}
           onDisconnect={() => handleDisconnect(MessagingPlatform.WhatsApp)}
           onSaveBotToken={(value) => savePlatformBotToken(MessagingPlatform.WhatsApp, value)}
+          storedBotToken={secrets?.messagingWhatsappBotToken}
         />
 
         {telegram?.paired === true || whatsapp?.paired === true ? (
@@ -419,6 +429,7 @@ function PlatformRow({
   onPair,
   onDisconnect,
   onSaveBotToken,
+  storedBotToken,
 }: {
   platform: MessagingPlatform;
   config: MessagingConfig['telegram'];
@@ -426,6 +437,7 @@ function PlatformRow({
   onPair: () => void;
   onDisconnect: () => void;
   onSaveBotToken: (value: string) => void;
+  storedBotToken?: SecretPresence;
 }) {
   const label = platformLabel(platform);
   const paired = !!config?.paired;
@@ -433,14 +445,13 @@ function PlatformRow({
   const chatId = config?.chatId;
   const testIdPrefix = platform === MessagingPlatform.Telegram ? 'telegram' : 'whatsapp';
 
-  const [botToken, setBotToken] = useState(config?.botToken ?? '');
-  useEffect(() => {
-    setBotToken(config?.botToken ?? '');
-  }, [config?.botToken]);
+  // Write-only: the stored token never reaches the browser, so the input
+  // starts empty and shows a masked placeholder instead.
+  const [botToken, setBotToken] = useState('');
 
   function handleBotTokenBlur() {
-    if (botToken === (config?.botToken ?? '')) return;
-    onSaveBotToken(botToken);
+    if (botToken.trim().length === 0) return;
+    onSaveBotToken(botToken.trim());
   }
 
   return (
@@ -500,9 +511,10 @@ function PlatformRow({
             id={`${testIdPrefix}-bot-token`}
             data-testid={`input-${testIdPrefix}-bot-token`}
             type="password"
-            placeholder={
+            placeholder={secretPlaceholder(
+              storedBotToken,
               platform === MessagingPlatform.Telegram ? '123456:ABC-...' : 'WhatsApp access token'
-            }
+            )}
             value={botToken}
             disabled={disabled}
             onChange={(e) => setBotToken(e.target.value)}

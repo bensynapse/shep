@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Settings, Trash2, Plus } from 'lucide-react';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -59,11 +60,14 @@ export function ProjectSettingsClient({
 
   const handleSaveGeneral = useCallback(async () => {
     setSaving(true);
-    await updatePmProject(project.id, {
+    const result = await updatePmProject(project.id, {
       name: name.trim(),
       description: description.trim() || undefined,
     });
     setSaving(false);
+    if (result.error) {
+      toast.error(result.error);
+    }
   }, [project.id, name, description]);
 
   const handleAddState = useCallback(async () => {
@@ -77,6 +81,8 @@ export function ProjectSettingsClient({
     if (result.state) {
       setStates((prev) => [...prev, result.state!]);
       setNewStateName('');
+    } else {
+      toast.error(result.error ?? 'Failed to add state');
     }
   }, [project.id, newStateName]);
 
@@ -84,6 +90,8 @@ export function ProjectSettingsClient({
     const result = await deleteWorkItemState(stateId);
     if (!result.error) {
       setStates((prev) => prev.filter((s) => s.id !== stateId));
+    } else {
+      toast.error(result.error);
     }
   }, []);
 
@@ -97,6 +105,8 @@ export function ProjectSettingsClient({
     if (result.label) {
       setLabels((prev) => [...prev, result.label!]);
       setNewLabelName('');
+    } else {
+      toast.error(result.error ?? 'Failed to add label');
     }
   }, [project.id, newLabelName, newLabelColor]);
 
@@ -104,6 +114,8 @@ export function ProjectSettingsClient({
     const result = await deleteLabel(labelId);
     if (!result.error) {
       setLabels((prev) => prev.filter((l) => l.id !== labelId));
+    } else {
+      toast.error(result.error);
     }
   }, []);
 
@@ -112,6 +124,8 @@ export function ProjectSettingsClient({
     const result = await deletePmProject(project.id);
     if (!result.error) {
       router.push('/projects');
+    } else {
+      toast.error(result.error);
     }
   }, [project.id, project.name, deleteConfirm, router]);
 
@@ -214,6 +228,7 @@ export function ProjectSettingsClient({
                   size="sm"
                   className="text-destructive hidden h-5 w-5 p-0 group-hover:flex"
                   onClick={() => handleDeleteState(state.id)}
+                  data-testid={`delete-state-${state.id}`}
                   title="Delete state"
                 >
                   <Trash2 className="h-3 w-3" />
@@ -268,6 +283,7 @@ export function ProjectSettingsClient({
                   type="button"
                   className="text-destructive ml-0.5 hidden text-xs group-hover:inline"
                   onClick={() => handleDeleteLabel(label.id)}
+                  data-testid={`delete-label-${label.id}`}
                   title="Delete label"
                 >
                   ×
