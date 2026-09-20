@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { toast } from 'sonner';
 import { MessagingSettingsSection } from '@/components/features/settings/messaging-settings-section';
 import { MessagingPlatform } from '@shepai/core/domain/generated/output';
 
@@ -68,6 +69,28 @@ describe('MessagingSettingsSection', () => {
   it('renders the enable toggle', () => {
     render(<MessagingSettingsSection messaging={disabledConfig} />);
     expect(screen.getByTestId('switch-messaging-enabled')).toBeDefined();
+  });
+
+  it('does not announce Saved after a failed settings write', async () => {
+    mockUpdateSettings.mockResolvedValue({ success: false, error: 'Storage full' });
+    render(<MessagingSettingsSection messaging={disabledConfig} />);
+
+    fireEvent.click(screen.getByTestId('switch-messaging-enabled'));
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith('Storage full'));
+    expect(screen.queryByText('Saving...')).toBeNull();
+    expect(screen.queryByText('Saved')).toBeNull();
+  });
+
+  it('reports a rejected settings request without leaving a pending save', async () => {
+    mockUpdateSettings.mockRejectedValue(new Error('Connection lost'));
+    render(<MessagingSettingsSection messaging={disabledConfig} />);
+
+    fireEvent.click(screen.getByTestId('switch-messaging-enabled'));
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith('Connection lost'));
+    expect(screen.queryByText('Saving...')).toBeNull();
+    expect(screen.queryByText('Saved')).toBeNull();
   });
 
   it('disables gateway input when messaging is off', () => {
