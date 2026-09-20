@@ -8,12 +8,12 @@ feature:
 status:
   phase: implementation-complete
   progress:
-    completed: 3
-    total: 3
+    completed: 4
+    total: 4
     percentage: 100
   currentTask: null
-  lastUpdated: '2026-09-20T20:15:29.803Z'
-  lastUpdatedBy: full-review-resume
+  lastUpdated: '2026-09-20T20:46:01.553Z'
+  lastUpdatedBy: full-review-followup
 checkpoints:
   - phase: feature-created
     completedAt: '2026-09-20T19:18:58.457Z'
@@ -28,7 +28,7 @@ checkpoints:
     completedAt: '2026-09-20T20:15:29.803Z'
     completedBy: full-review-resume
 validation:
-  lastRun: '2026-09-20T20:15:29.803Z'
+  lastRun: '2026-09-20T20:46:01.553Z'
   gatesPassed:
     - regressions
     - release-build
@@ -42,6 +42,12 @@ validation:
     - spec-validation
     - browser-applications
     - browser-settings
+    - dependency-regressions
+    - remote-merge-regressions
+    - http-request-failures
+    - browser-all-standard
+    - cli-tui-e2e
+    - frozen-lockfile
 tasks:
   current: null
   blocked: []

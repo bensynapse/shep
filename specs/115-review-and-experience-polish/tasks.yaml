@@ -1,6 +1,6 @@
 name: review-and-experience-polish
 phase: Implementation
-summary: Three dependency-ordered review, implementation and verification tasks.
+summary: Four dependency-ordered review, implementation and verification tasks.
 tasks:
   - id: task-1
     phaseId: phase-1
@@ -51,20 +51,44 @@ tasks:
         - Repair verified regressions and rerun affected checks
       refactor:
         - Review changes for duplication and unnecessary state; retain passing regression checks
+  - id: task-4
+    phaseId: phase-4
+    title: Close remaining merge, dependency and browser coverage gaps
+    state: Done
+    dependencies:
+      - task-3
+    acceptanceCriteria:
+      - Remote PR completion is verified before branch and worktree cleanup
+      - No expected-failure test remains without a resolved behavioral contract
+      - Dependency path traversal regressions are prevented by tested dependency patches
+      - Available browser workflows and final quality gates are exercised
+      - >-
+        Async HTTP handler failures are contained and browser aborts produce no uncaught request
+        errors
+    tdd:
+      red:
+        - Reproduce queued PR cleanup and dependency path traversal with isolated fixtures
+        - Run previously omitted browser scenarios against an isolated instance
+      green:
+        - Fix confirmed defects and rerun affected scenarios
+      refactor:
+        - Preserve existing contracts and record evidence and environment limits
 content: >
   ## Acceptance
 
-  Tests, story rendering, screenshots and quality-gate logs are recorded in evidence and the review
-  run. No claim of universal correctness is implied.
+
+  Tests, stories, screenshots and quality-gate logs are recorded in evidence and the review run. No
+  claim of universal correctness is implied.
 
 
   ## Completed verification
 
 
-  The recovered review and UI work is complete. The broad suite passed 1,205 files and 14,320 tests
-  with one pre-existing expected failure. The final messaging fix passed 16 focused tests and two
-  live browser scenarios; three language-switching scenarios also passed. Executor and memory
-  regressions passed 519 tests. Release, final web and Storybook builds, type checks, lint,
-  formatting and story coverage passed. See [the review record](evidence/review-report.yaml) for
-  evidence, coverage and the four remaining upstream dependency advisories.
+  The final full suites passed 1,057 unit files / 12,606 tests and 152 integration files / 1,749
+  tests with no expected failures. All 29 standard browser scenarios passed without skips, and 87
+  CLI/TUI end-to-end tests passed. Release and Storybook builds, root and web typechecks, lint,
+  formatting, story coverage and the frozen lockfile install passed. Twelve dependency traversal
+  regressions pass with pinned local patches; the four raw version-based audit matches remain
+  visible and are documented. See [the review record](evidence/review-report.yaml) for fixes,
+  coverage, provenance and environment limits.
 totalEstimate: L

@@ -23,6 +23,15 @@ phases:
     description: >-
       RED: reproduce an observed failure or missing user behavior. GREEN: implement the smallest
       cohesive repair. REFACTOR: integrate with existing patterns and verify affected checks.
+  - id: phase-4
+    name: Close remaining review gaps
+    parallel: false
+    description: >-
+      RED: reproduce queued PR cleanup, archive traversal and TypeSpec output traversal in isolated
+      fixtures, and exercise previously omitted browser workflows. GREEN: repair the confirmed
+      failures. REFACTOR: retain existing architecture and verify final gates. Contain
+      browser-observed asynchronous HTTP handler failures with focused tests and a shared
+      infrastructure adapter.
 filesToModify:
   - src/presentation/web/components/features/applications/applications-page-client.tsx
   - src/presentation/web/components/features/applications/applications-page-client.stories.tsx
@@ -34,4 +43,9 @@ content: >
   RED-GREEN-REFACTOR is required for every behavior change. Preserve query caching, polling,
   stale-data recovery and imports. Test before changing implementation. Roll back only changes owned
   by this review.
-filesToCreate: []
+filesToCreate:
+  - packages/core/src/infrastructure/services/http-request-listener.ts
+  - tests/unit/infrastructure/services/http-request-listener.test.ts
+  - tests/integration/security/dependency-path-traversal.test.ts
+  - patches/extract-zip@2.0.1.patch
+  - patches/@typespec__openapi3@0.60.0.patch

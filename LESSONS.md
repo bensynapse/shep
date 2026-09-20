@@ -1,5 +1,19 @@
 # Lessons Learned
 
+## Check ownership before committing in a shared checkout
+
+Re-read Git status and the index before every commit. Stage only paths whose
+changes belong to this session, leave another agent's work intact, and check
+status again after hooks restore unstaged changes. A handoff saying the tree
+is clean never replaces checking its current state.
+
+## Close actionable findings before calling a review complete
+
+When asked to finish an end-to-end review, investigate expected failures and
+remaining advisories instead of treating their existing status as an exemption.
+Prove fixes with regressions, exercise omitted local workflows, and distinguish
+completed verification from checks that require an unavailable environment.
+
 ## Recover the conversation before resuming interrupted work
 
 When asked to find a crashed session, locate the actual session record by workspace
