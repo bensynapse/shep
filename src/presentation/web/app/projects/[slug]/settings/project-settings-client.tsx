@@ -33,7 +33,7 @@ export interface ProjectSettingsClientProps {
 }
 
 const STATE_GROUP_COLORS: Record<string, string> = {
-  backlog: 'bg-gray-400',
+  backlog: 'bg-gray-300 dark:bg-gray-400',
   unstarted: 'bg-blue-400',
   started: 'bg-yellow-400',
   completed: 'bg-green-400',
@@ -138,6 +138,7 @@ export function ProjectSettingsClient({
           size="sm"
           className="h-7 w-7 p-0"
           onClick={() => router.push(`/projects/${project.slug}`)}
+          aria-label="Back to project"
           data-testid="back-to-project"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -154,18 +155,25 @@ export function ProjectSettingsClient({
         <h2 className="text-xs font-semibold tracking-wide uppercase">General</h2>
         <div className="space-y-2">
           <div>
-            <label className="text-muted-foreground mb-1 block text-[10px] font-medium">
+            <label
+              htmlFor="pm-project-name"
+              className="text-muted-foreground mb-1 block text-[10px] font-medium"
+            >
               Project Name
             </label>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="h-8 text-xs"
+              id="pm-project-name"
               data-testid="project-name-input"
             />
           </div>
           <div>
-            <label className="text-muted-foreground mb-1 block text-[10px] font-medium">
+            <label
+              htmlFor="pm-project-description"
+              className="text-muted-foreground mb-1 block text-[10px] font-medium"
+            >
               Description
             </label>
             <Input
@@ -173,6 +181,7 @@ export function ProjectSettingsClient({
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Optional description"
               className="h-8 text-xs"
+              id="pm-project-description"
               data-testid="project-description-input"
             />
           </div>
@@ -214,7 +223,10 @@ export function ProjectSettingsClient({
               <span className="flex-1">{state.name}</span>
               <Badge
                 variant="outline"
-                className={cn('text-[9px]', STATE_GROUP_COLORS[state.stateGroup] ?? 'bg-gray-400')}
+                className={cn(
+                  'text-xs text-neutral-950',
+                  STATE_GROUP_COLORS[state.stateGroup] ?? 'bg-gray-300 dark:bg-gray-400'
+                )}
               >
                 {state.stateGroup}
               </Badge>
@@ -298,6 +310,7 @@ export function ProjectSettingsClient({
             value={newLabelColor}
             onChange={(e) => setNewLabelColor(e.target.value)}
             className="h-7 w-7 cursor-pointer rounded border-0 p-0"
+            aria-label="Label color"
             data-testid="new-label-color"
           />
           <Input

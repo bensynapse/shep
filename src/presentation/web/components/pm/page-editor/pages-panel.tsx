@@ -175,16 +175,17 @@ export function PagesPanel({ projectId, pages: initialPages, className }: PagesP
   };
 
   return (
-    <div data-testid="pages-panel" className={cn('flex h-full gap-0', className)}>
+    <div data-testid="pages-panel" className={cn('flex h-full gap-0 max-sm:flex-col', className)}>
       {/* Sidebar */}
-      <div className="flex w-56 shrink-0 flex-col border-r">
+      <div className="flex w-56 shrink-0 flex-col border-r max-sm:max-h-56 max-sm:w-full max-sm:border-b">
         <div className="flex items-center justify-between border-b px-3 py-2">
-          <span className="text-xs font-medium">Pages</span>
+          <h1 className="text-sm font-semibold">Pages</h1>
           <Button
             variant="ghost"
             size="sm"
-            className="h-5 w-5 p-0"
+            className="h-8 w-8 p-0"
             onClick={() => setIsCreating(true)}
+            aria-label="Create page"
             data-testid="create-page-btn"
           >
             <Plus className="h-3 w-3" />

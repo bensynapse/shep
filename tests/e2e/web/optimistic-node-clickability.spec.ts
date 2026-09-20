@@ -107,7 +107,8 @@ test.describe('Feature node clickability — drawer opens after feature creation
 
     // Remember the name of the first existing feature node for drawer verification
     const firstNodeHeading = page
-      .locator('[data-testid="feature-node-card"]:not([aria-busy="true"]) h3')
+      .locator('[data-testid="feature-node-card"]:not([aria-busy="true"])')
+      .getByTestId('feature-node-title')
       .first();
     const firstNodeName = await firstNodeHeading.textContent();
 
@@ -193,7 +194,7 @@ test.describe('All feature nodes open a drawer on click', () => {
     // Click each feature node and verify a drawer opens
     for (let i = 0; i < clickableCount; i++) {
       const node = clickableNodes.nth(i);
-      const nodeName = await node.locator('h3').textContent();
+      const nodeName = await node.getByTestId('feature-node-title').textContent();
 
       // Click the feature node
       await node.click();

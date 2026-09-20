@@ -200,7 +200,7 @@ export function RepositoryNode({
                         data.onAdd?.();
                       }}
                       className={cn(
-                        'flex h-6 shrink-0 cursor-pointer items-center gap-0.5 rounded bg-blue-500 px-1.5 text-[11px] font-bold text-white transition-colors hover:bg-blue-600 dark:bg-amber-500 dark:hover:bg-amber-400',
+                        'flex h-6 shrink-0 cursor-pointer items-center gap-0.5 rounded bg-blue-600 px-1.5 text-[11px] font-bold text-white transition-colors hover:bg-blue-600 dark:bg-amber-500 dark:text-neutral-950 dark:hover:bg-amber-400',
                         data.pulseAdd && 'animate-pulse-cta'
                       )}
                     >
@@ -255,7 +255,7 @@ export function RepositoryNode({
                   </span>
                   {data.committer ? (
                     <span
-                      className="text-muted-foreground/70 ms-auto flex shrink-0 items-center gap-1"
+                      className="text-muted-foreground ms-auto flex shrink-0 items-center gap-1"
                       data-testid="repository-node-committer"
                     >
                       <User className="h-3 w-3 shrink-0" />
@@ -275,13 +275,11 @@ export function RepositoryNode({
             >
               <div className="flex items-center gap-2 text-xs">
                 <FolderOpen className="h-3 w-3 shrink-0" />
-                <span className="min-w-0 truncate opacity-60">
-                  {data.repositoryPath ?? 'Unknown path'}
-                </span>
+                <span className="min-w-0 truncate">{data.repositoryPath ?? 'Unknown path'}</span>
               </div>
             </div>
             <div className="text-muted-foreground border-border/50 border-t px-4 py-2">
-              <div className="flex items-center gap-2 text-xs opacity-40">
+              <div className="flex items-center gap-2 text-xs">
                 <GitBranch className="h-3 w-3 shrink-0" />
                 <span>{t('repositoryNode.notAGitRepository')}</span>
               </div>
@@ -337,7 +335,7 @@ export function RepositoryNode({
               ) : (
                 <span className="text-muted-foreground inline-flex items-baseline gap-2">
                   <span>{t('repositoryNode.run')}</span>
-                  <span className="text-muted-foreground/50 text-[10px]">
+                  <span className="text-muted-foreground text-xs">
                     {t('repositoryNode.startLocalEnvironment')}
                   </span>
                 </span>

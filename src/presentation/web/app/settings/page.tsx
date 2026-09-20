@@ -18,7 +18,7 @@ export default async function SettingsPage() {
   }
 
   return (
-    <div className="flex h-full flex-col px-6 pb-6">
+    <div className="flex min-h-full flex-col px-4 pb-6 sm:px-6">
       <SettingsPageClient
         settings={settings}
         secrets={secrets}

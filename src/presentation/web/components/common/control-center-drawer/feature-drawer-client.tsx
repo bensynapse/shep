@@ -959,6 +959,7 @@ export function FeatureDrawerClient({
                           type="button"
                           disabled={isArchiving}
                           className={tbBtn}
+                          aria-label={t('featureDrawer.unarchiveFeature')}
                           data-testid="feature-drawer-unarchive"
                           onClick={() => handleUnarchive(featureNode.featureId)}
                         >
@@ -980,6 +981,7 @@ export function FeatureDrawerClient({
                           type="button"
                           disabled={isArchiving}
                           className={tbBtn}
+                          aria-label={t('featureDrawer.archiveFeature')}
                           data-testid="feature-drawer-archive"
                           onClick={() => handleArchive(featureNode.featureId)}
                         >
@@ -1001,6 +1003,7 @@ export function FeatureDrawerClient({
                         type="button"
                         disabled={isDeleting}
                         className={cn(tbBtn, 'hover:bg-destructive/10 hover:text-destructive')}
+                        aria-label={t('featureDrawer.deleteFeature')}
                         data-testid="feature-drawer-delete"
                         onClick={() => setDeleteDialogOpen(true)}
                       >

@@ -70,6 +70,26 @@ describe('WelcomeAgentSetup', () => {
     mockedUpdateAgentAndModel.mockResolvedValue({ ok: true });
   });
 
+  it('announces agent loading to assistive technology', () => {
+    mockedGetAllAgentModels.mockReturnValueOnce(
+      new Promise(() => {
+        /* Keep the loading state pending. */
+      })
+    );
+    render(<WelcomeAgentSetup onComplete={onComplete} />);
+    expect(screen.getByRole('status')).toHaveTextContent('Loading agents');
+  });
+
+  it('moves keyboard focus to the new step heading', async () => {
+    render(<WelcomeAgentSetup onComplete={onComplete} />);
+    await userEvent.click(await screen.findByTestId('agent-option-claude-code'));
+    await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toHaveFocus());
+    await userEvent.click(screen.getByRole('button', { name: /back/i }));
+    await waitFor(() =>
+      expect(screen.getByRole('heading', { name: 'Choose your agent' })).toHaveFocus()
+    );
+  });
+
   it('renders agent list after loading', async () => {
     render(<WelcomeAgentSetup onComplete={onComplete} />);
 

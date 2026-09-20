@@ -256,7 +256,7 @@ export function ApplicationNode({
                           data.onCreateSddFeature?.(data.id);
                         }}
                         onPointerDown={(e) => e.stopPropagation()}
-                        className="nodrag flex h-6 shrink-0 cursor-pointer items-center gap-0.5 rounded bg-blue-500 px-1.5 text-[11px] font-bold text-white transition-colors hover:bg-blue-600 dark:bg-amber-500 dark:hover:bg-amber-400"
+                        className="nodrag flex h-6 shrink-0 cursor-pointer items-center gap-0.5 rounded bg-blue-600 px-1.5 text-[11px] font-bold text-white transition-colors hover:bg-blue-600 dark:bg-amber-500 dark:text-neutral-950 dark:hover:bg-amber-400"
                       >
                         <Plus className="h-3 w-3" />
                         <span className="translate-y-px">{t('repositoryNode.new')}</span>

@@ -47,6 +47,8 @@ export function WelcomeAgentSetup({ onComplete, className }: WelcomeAgentSetupPr
   const [transitioning, setTransitioning] = useState(false);
   const [visible, setVisible] = useState(true);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const previousStep = useRef(step);
 
   const loadGroups = useCallback(() => {
     setLoading(true);
@@ -68,6 +70,13 @@ export function WelcomeAgentSetup({ onComplete, className }: WelcomeAgentSetupPr
   useEffect(() => {
     loadGroups();
   }, [loadGroups]);
+
+  useEffect(() => {
+    if (step !== previousStep.current) {
+      previousStep.current = step;
+      headingRef.current?.focus({ preventScroll: true });
+    }
+  }, [step]);
 
   const activeGroup = selectedAgent ? groups.find((g) => g.agentType === selectedAgent) : null;
 
@@ -158,6 +167,7 @@ export function WelcomeAgentSetup({ onComplete, className }: WelcomeAgentSetupPr
     return (
       <div
         data-testid="welcome-agent-setup"
+        role="status"
         className={cn('flex flex-col items-center justify-center gap-4', className)}
       >
         <Loader2 className="text-muted-foreground h-5 w-5 animate-spin" />
@@ -246,7 +256,11 @@ export function WelcomeAgentSetup({ onComplete, className }: WelcomeAgentSetupPr
           visible && !transitioning ? 'opacity-100' : 'opacity-0'
         )}
       >
-        <h1 className="text-foreground/90 text-center text-5xl font-extralight tracking-tight">
+        <h1
+          ref={headingRef}
+          tabIndex={-1}
+          className="text-foreground/90 text-center text-3xl font-light tracking-tight outline-none sm:text-5xl"
+        >
           {heroTitle}
         </h1>
         <p className="text-muted-foreground mt-3 text-center text-lg leading-relaxed font-light">
@@ -258,7 +272,7 @@ export function WelcomeAgentSetup({ onComplete, className }: WelcomeAgentSetupPr
           {step === 'select-agent' && (
             <div
               data-testid="agent-list"
-              className="grid w-full max-w-lg gap-3"
+              className="grid w-full max-w-lg gap-3 max-sm:grid-cols-2!"
               style={{
                 gridTemplateColumns: gridColumns(groups.length, MAX_AGENT_COLUMNS),
               }}
@@ -273,7 +287,7 @@ export function WelcomeAgentSetup({ onComplete, className }: WelcomeAgentSetupPr
                     disabled={saving}
                     aria-busy={saving}
                     data-testid={`agent-option-${group.agentType}`}
-                    className="border-border hover:bg-accent hover:border-foreground/20 flex cursor-pointer flex-col items-center gap-3 rounded-2xl border px-4 py-5 transition-all duration-150 active:scale-[0.97] disabled:opacity-50"
+                    className="border-border bg-card/80 focus-visible:ring-ring hover:bg-accent hover:border-foreground/20 flex min-w-0 cursor-pointer flex-col items-center gap-3 rounded-2xl border px-3 py-5 shadow-xs transition-all duration-150 outline-none focus-visible:ring-2 focus-visible:ring-offset-2 active:scale-[0.97] disabled:opacity-50 dark:bg-white/[0.035]"
                     onClick={() => handleAgentSelect(group.agentType)}
                   >
                     {pending ? (
@@ -282,9 +296,11 @@ export function WelcomeAgentSetup({ onComplete, className }: WelcomeAgentSetupPr
                         className="text-foreground/70 h-7 w-7 animate-spin"
                       />
                     ) : (
-                      <GroupIcon className="text-foreground/70 h-7 w-7" />
+                      <GroupIcon aria-hidden className="text-foreground/70 h-7 w-7" />
                     )}
-                    <span className="text-sm font-medium">{group.label}</span>
+                    <span className="max-w-full text-sm font-medium wrap-break-word">
+                      {group.label}
+                    </span>
                   </button>
                 );
               })}
@@ -312,7 +328,7 @@ export function WelcomeAgentSetup({ onComplete, className }: WelcomeAgentSetupPr
                 {t('welcome.back')}
               </button>
               <div
-                className="grid w-full gap-3"
+                className="grid w-full gap-3 max-sm:grid-cols-1!"
                 style={{
                   gridTemplateColumns: gridColumns(activeGroup.models.length, MAX_MODEL_COLUMNS),
                 }}
@@ -327,7 +343,7 @@ export function WelcomeAgentSetup({ onComplete, className }: WelcomeAgentSetupPr
                       disabled={saving}
                       aria-busy={saving}
                       data-testid={`model-option-${m.id}`}
-                      className="border-border hover:bg-accent hover:border-foreground/20 flex cursor-pointer flex-col items-center gap-2 rounded-2xl border px-4 py-5 text-center transition-all duration-150 active:scale-[0.97] disabled:opacity-50"
+                      className="border-border bg-card/80 focus-visible:ring-ring hover:bg-accent hover:border-foreground/20 flex min-w-0 cursor-pointer flex-col items-center gap-2 rounded-2xl border px-3 py-5 text-center shadow-xs transition-all duration-150 outline-none focus-visible:ring-2 focus-visible:ring-offset-2 active:scale-[0.97] disabled:opacity-50 dark:bg-white/[0.035]"
                       onClick={() => handleModelSelect(m.id)}
                     >
                       {pending ? (
@@ -336,7 +352,7 @@ export function WelcomeAgentSetup({ onComplete, className }: WelcomeAgentSetupPr
                           className="text-foreground/70 h-5 w-5 animate-spin"
                         />
                       ) : null}
-                      <span className="text-sm font-medium">
+                      <span className="max-w-full text-sm font-medium wrap-break-word">
                         {meta.displayName || m.displayName}
                       </span>
                       <span className="text-muted-foreground text-xs leading-tight">

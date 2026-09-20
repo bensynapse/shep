@@ -638,6 +638,7 @@ export function ControlCenterInner({ initialNodes, initialEdges }: ControlCenter
 
   return (
     <>
+      {showCanvas || workspaceFilteredEmpty ? <h1 className="sr-only">Control Center</h1> : null}
       <FeaturesCanvas
         nodes={showCanvas ? displayNodes : []}
         edges={showCanvas ? workspaceFilteredEdges : []}

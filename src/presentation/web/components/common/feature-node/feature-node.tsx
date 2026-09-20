@@ -392,13 +392,16 @@ export function FeatureNode({
           {data.securityMode ? <SecurityBadge mode={data.securityMode} /> : null}
           {/* The title — not the card — is the activatable control: the card
               holds real buttons, which may not be nested inside `role="button"`. */}
-          <h3
-            {...titleProps}
-            data-testid="feature-node-title"
-            className={cn('min-w-0 truncate text-sm font-bold', ACTIVATABLE_TITLE_CLASS)}
-          >
-            {data.name}
-          </h3>
+          <h2 className="min-w-0 truncate text-sm font-bold">
+            <button
+              type="button"
+              {...titleProps}
+              data-testid="feature-node-title"
+              className={cn('max-w-full truncate text-left', ACTIVATABLE_TITLE_CLASS)}
+            >
+              {data.name}
+            </button>
+          </h2>
         </div>
 
         {/* Description */}

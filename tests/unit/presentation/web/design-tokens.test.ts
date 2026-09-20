@@ -86,7 +86,7 @@ describe('design tokens — contrast (A2)', () => {
     ).toBeGreaterThanOrEqual(4.5);
   });
 
-  it('dark destructive already passed and is left alone', () => {
+  it('dark destructive fill carries its foreground at AA', () => {
     expect(
       contrast(
         token(darkBlock, 'color-destructive'),
@@ -94,6 +94,14 @@ describe('design tokens — contrast (A2)', () => {
       )
     ).toBeGreaterThanOrEqual(4.5);
   });
+
+  for (const surface of ['background', 'card', 'muted', 'accent']) {
+    it(`dark error text is readable on the ${surface} surface`, () => {
+      expect(
+        contrast(token(darkBlock, 'color-destructive'), token(darkBlock, `color-${surface}`))
+      ).toBeGreaterThanOrEqual(4.5);
+    });
+  }
 });
 
 describe('design tokens — focus ring (A3)', () => {

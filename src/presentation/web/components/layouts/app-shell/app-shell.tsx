@@ -7,7 +7,7 @@ import dynamic from 'next/dynamic';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { Direction } from 'radix-ui';
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
+import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/layouts/app-sidebar';
 import { pickFolder } from '@/components/common/add-repository-button/pick-folder';
 import { buildCreateUrl } from '@/lib/url-params';
@@ -47,6 +47,7 @@ import {
 } from '@/hooks/sidebar-features-context';
 import { TurnStatusesProvider } from '@/hooks/turn-statuses-provider';
 
+import { useIsMobile } from '@/hooks/use-mobile';
 import { useNotifications } from '@/hooks/use-notifications';
 import { useFeatureFlags } from '@/hooks/feature-flags-context';
 import type { ShellVariant } from '@/lib/shell-variant';
@@ -69,6 +70,7 @@ interface AppShellProps {
 function AppShellInner({ children, sidebarOpen, variant = 'full' }: AppShellProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const isMobile = useIsMobile();
   const { guardedNavigate } = useDrawerCloseGuard();
   const featureFlags = useFeatureFlags();
 
@@ -233,17 +235,21 @@ function AppShellInner({ children, sidebarOpen, variant = 'full' }: AppShellProp
       {/* The Control Center's session-tree sub-nav is rendered by the
           (dashboard) layout, which owns the providers it shares with the
           canvas. */}
-      <SidebarInset>
+      <SidebarInset id="main-content" tabIndex={-1} className="min-w-0">
         {/* `h-dvh` (not `h-full`) so the full-shell page area has an
             explicit viewport-bound height regardless of child content.
             Without this, the outer `SidebarProvider`'s `min-h-svh`
             allows the tree to GROW past the viewport when a child
             (e.g. the application page's expanded step tracker) exceeds
             viewport height, producing an outer body scrollbar. */}
-        <div className="relative h-dvh">
-          <main id="main-content" tabIndex={-1} className="h-full min-h-0">
-            {children}
-          </main>
+        <div className="relative flex h-dvh flex-col">
+          {isMobile ? (
+            <header className="bg-background flex h-12 shrink-0 items-center gap-2 border-b px-3 md:hidden">
+              <SidebarTrigger className="size-10" />
+              <span className="text-sm font-semibold">Shep</span>
+            </header>
+          ) : null}
+          <div className="min-h-0 flex-1 overflow-y-auto">{children}</div>
           {/* Global chat popup — fixed, visible across pages EXCEPT
               on application routes where the page owns its own
               primary actions and the chat FAB is redundant. */}

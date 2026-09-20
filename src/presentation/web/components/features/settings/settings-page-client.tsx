@@ -70,6 +70,8 @@ const LANGUAGE_OPTIONS = [
 import { TimeoutSlider } from '@/components/features/settings/timeout-slider';
 import { SupplyChainSecuritySettingsSection } from '@/components/features/settings/supply-chain-security-settings-section';
 import { WorktreeSettingsSection } from '@/components/features/settings/worktree-settings-section';
+import { SettingsSectionNav } from './settings-section-nav';
+import { useHydrated } from '@/hooks/use-hydrated';
 import { AdaptiveModelSettingsSection } from '@/components/features/settings/adaptive-model-settings-section';
 import type {
   Settings,
@@ -162,16 +164,20 @@ function SettingsRow({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center justify-between gap-4 border-b py-2.5 last:border-b-0">
+    <div className="flex min-w-0 flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b py-2.5 last:border-b-0">
       <div className="min-w-0">
-        <Label htmlFor={htmlFor} className="cursor-pointer text-sm font-normal whitespace-nowrap">
+        <Label
+          id={htmlFor ? `${htmlFor}-label` : undefined}
+          htmlFor={htmlFor}
+          className="cursor-pointer text-sm font-normal"
+        >
           {label}
         </Label>
         {description ? (
           <p className="text-muted-foreground text-[11px] leading-tight">{description}</p>
         ) : null}
       </div>
-      <div className="flex shrink-0 items-center gap-2">{children}</div>
+      <div className="flex max-w-full min-w-0 flex-wrap items-center gap-2">{children}</div>
     </div>
   );
 }
@@ -225,7 +231,7 @@ function SettingsSection({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-background rounded-lg border" data-testid={testId}>
+    <div className="bg-background min-w-0 rounded-lg border" data-testid={testId}>
       <div className="bg-muted/30 border-b px-4 py-3">
         <div className="flex items-center gap-2">
           <Icon className="text-muted-foreground h-3.5 w-3.5" />
@@ -346,7 +352,7 @@ function SectionHint({
 }) {
   return (
     <div className="hidden pt-2 lg:block">
-      <p className="text-muted-foreground/70 text-[11px] leading-relaxed">{children}</p>
+      <p className="text-muted-foreground text-xs leading-relaxed">{children}</p>
       {links != null && links.length > 0 ? (
         <div className="mt-2 flex flex-col gap-1">
           {links.map((link) => (
@@ -355,7 +361,7 @@ function SectionHint({
               href={link.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-[10px] transition-colors"
+              className="text-muted-foreground hover:text-foreground inline-flex min-h-6 items-center gap-1 text-xs transition-colors"
             >
               <ExternalLink className="h-2.5 w-2.5" />
               {link.label}
@@ -378,6 +384,7 @@ export function SettingsPageClient({
 }: SettingsPageClientProps) {
   const { t, i18n: i18nInstance } = useTranslation('web');
   const { showSaving, showSaved, save } = useSettingsSave();
+  const hydrated = useHydrated();
   const featureFlags = settings.featureFlags ?? {
     envDeploy: false,
     debug: false,
@@ -719,7 +726,9 @@ export function SettingsPageClient({
   const scrollToSection = useCallback((id: string) => {
     const el = document.getElementById(`section-${id}`);
     if (!el) return;
-    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Jump atomically: native smooth scrolling can be interrupted by async
+    // settings content resizing while the destination is several screens away.
+    el.scrollIntoView({ behavior: 'instant', block: 'start' });
     // Flash highlight
     el.style.animation = 'none';
     // Force reflow
@@ -728,9 +737,9 @@ export function SettingsPageClient({
   }, []);
 
   return (
-    <div data-testid="settings-page-client" className="max-w-5xl">
-      {/* Sticky header — title + save indicator + TOC in one row */}
-      <div className="bg-background/95 supports-backdrop-filter:bg-background/80 sticky top-0 z-10 grid grid-cols-1 gap-x-5 pt-6 pb-4 backdrop-blur lg:grid-cols-[1fr_280px]">
+    <fieldset disabled={!hydrated} data-testid="settings-page-client" className="max-w-5xl min-w-0">
+      {/* Sticky header with a scrollable, labeled section navigator */}
+      <div className="bg-background/95 supports-backdrop-filter:bg-background/80 sticky top-0 z-10 flex min-w-0 flex-col gap-3 pt-4 pb-3 backdrop-blur">
         <div className="flex items-center gap-2">
           <Settings2 className="text-muted-foreground h-4 w-4" />
           <h1 className="text-sm font-bold tracking-tight">{t('settings.title')}</h1>
@@ -748,36 +757,19 @@ export function SettingsPageClient({
               </>
             ) : null}
           </span>
-          <nav className="ml-auto flex items-center gap-0.5">
-            {visibleSections.map((s) => {
-              const SectionIcon = s.icon;
-              const isActive = activeSection === s.id;
-              return (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => scrollToSection(s.id)}
-                  className={cn(
-                    'flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-1 text-[11px] transition-all',
-                    isActive
-                      ? 'bg-accent text-foreground font-medium'
-                      : 'text-muted-foreground/60 hover:text-foreground hover:bg-accent/50'
-                  )}
-                >
-                  <SectionIcon className="h-3 w-3" />
-                  <span className="hidden sm:inline">{t(s.labelKey)}</span>
-                </button>
-              );
-            })}
-          </nav>
         </div>
+        <SettingsSectionNav
+          sections={visibleSections}
+          activeSection={activeSection}
+          onSelect={scrollToSection}
+        />
       </div>
 
       <div className="flex flex-col gap-3">
         {/* ── Language ── */}
         <div
           id="section-language"
-          className="grid scroll-mt-18 grid-cols-1 gap-x-5 rounded-lg lg:grid-cols-[1fr_280px]"
+          className="grid scroll-mt-32 grid-cols-1 gap-x-5 rounded-lg lg:grid-cols-[minmax(0,1fr)_280px]"
         >
           <SettingsSection
             icon={Globe}
@@ -805,7 +797,7 @@ export function SettingsPageClient({
         {/* ── Agent ── */}
         <div
           id="section-agent"
-          className="grid scroll-mt-18 grid-cols-1 gap-x-5 rounded-lg lg:grid-cols-[1fr_280px]"
+          className="grid scroll-mt-32 grid-cols-1 gap-x-5 rounded-lg lg:grid-cols-[minmax(0,1fr)_280px]"
         >
           <SettingsSection
             icon={Bot}
@@ -960,7 +952,7 @@ export function SettingsPageClient({
         {/* ── Adaptive model selection ── */}
         <div
           id="section-adaptive-models"
-          className="grid scroll-mt-18 grid-cols-1 gap-x-5 rounded-lg lg:grid-cols-[1fr_280px]"
+          className="grid scroll-mt-32 grid-cols-1 gap-x-5 rounded-lg lg:grid-cols-[minmax(0,1fr)_280px]"
         >
           <AdaptiveModelSettingsSection adaptive={settings.models.adaptive} />
           <SectionHint
@@ -978,7 +970,7 @@ export function SettingsPageClient({
         {/* ── Environment ── */}
         <div
           id="section-environment"
-          className="grid scroll-mt-18 grid-cols-1 gap-x-5 rounded-lg lg:grid-cols-[1fr_280px]"
+          className="grid scroll-mt-32 grid-cols-1 gap-x-5 rounded-lg lg:grid-cols-[minmax(0,1fr)_280px]"
         >
           <SettingsSection
             icon={Terminal}
@@ -1017,7 +1009,7 @@ export function SettingsPageClient({
                     return (
                       <SelectItem key={opt.value} value={opt.value}>
                         <span className="flex items-center gap-2 text-xs">
-                          <Icon className="h-4 w-4 shrink-0" />
+                          <Icon aria-hidden className="h-4 w-4 shrink-0" />
                           {opt.label}
                         </span>
                       </SelectItem>
@@ -1110,7 +1102,7 @@ export function SettingsPageClient({
         {/* ── Worktree provisioning ── */}
         <div
           id="section-worktree"
-          className="grid scroll-mt-18 grid-cols-1 gap-x-5 rounded-lg lg:grid-cols-[1fr_280px]"
+          className="grid scroll-mt-32 grid-cols-1 gap-x-5 rounded-lg lg:grid-cols-[minmax(0,1fr)_280px]"
         >
           <WorktreeSettingsSection worktree={settings.worktree} />
           <SectionHint
@@ -1128,7 +1120,7 @@ export function SettingsPageClient({
         {/* ── Workflow ── */}
         <div
           id="section-workflow"
-          className="grid scroll-mt-18 grid-cols-1 gap-x-5 rounded-lg lg:grid-cols-[1fr_280px]"
+          className="grid scroll-mt-32 grid-cols-1 gap-x-5 rounded-lg lg:grid-cols-[minmax(0,1fr)_280px]"
         >
           <SettingsSection
             icon={GitBranch}
@@ -1149,6 +1141,7 @@ export function SettingsPageClient({
               >
                 <SelectTrigger
                   id="default-mode"
+                  aria-label={t('settings.workflow.defaultMode')}
                   data-testid="default-mode-select"
                   className="w-55 cursor-pointer text-xs"
                 >
@@ -1345,7 +1338,7 @@ export function SettingsPageClient({
         {flags.supplyChainSecurity ? (
           <div
             id="section-security"
-            className="grid scroll-mt-18 grid-cols-1 gap-x-5 rounded-lg lg:grid-cols-[1fr_280px]"
+            className="grid scroll-mt-32 grid-cols-1 gap-x-5 rounded-lg lg:grid-cols-[minmax(0,1fr)_280px]"
           >
             <SupplyChainSecuritySettingsSection
               securityState={{
@@ -1372,7 +1365,7 @@ export function SettingsPageClient({
         {/* ── CI ── */}
         <div
           id="section-ci"
-          className="grid scroll-mt-18 grid-cols-1 gap-x-5 rounded-lg lg:grid-cols-[1fr_280px]"
+          className="grid scroll-mt-32 grid-cols-1 gap-x-5 rounded-lg lg:grid-cols-[minmax(0,1fr)_280px]"
         >
           <SettingsSection
             icon={Activity}
@@ -1487,7 +1480,7 @@ export function SettingsPageClient({
         {/* ── Stage Timeouts ── */}
         <div
           id="section-stage-timeouts"
-          className="grid scroll-mt-18 grid-cols-1 gap-x-5 rounded-lg lg:grid-cols-[1fr_280px]"
+          className="grid scroll-mt-32 grid-cols-1 gap-x-5 rounded-lg lg:grid-cols-[minmax(0,1fr)_280px]"
         >
           <SettingsSection
             icon={Timer}
@@ -1644,7 +1637,7 @@ export function SettingsPageClient({
         {/* ── Notifications ── */}
         <div
           id="section-notifications"
-          className="grid scroll-mt-18 grid-cols-1 gap-x-5 rounded-lg lg:grid-cols-[1fr_280px]"
+          className="grid scroll-mt-32 grid-cols-1 gap-x-5 rounded-lg lg:grid-cols-[minmax(0,1fr)_280px]"
         >
           <SettingsSection
             icon={Bell}
@@ -1846,7 +1839,7 @@ export function SettingsPageClient({
         {/* ── Messaging Remote Control ── */}
         <div
           id="section-messaging"
-          className="grid scroll-mt-18 grid-cols-1 gap-x-5 rounded-lg lg:grid-cols-[1fr_280px]"
+          className="grid scroll-mt-32 grid-cols-1 gap-x-5 rounded-lg lg:grid-cols-[minmax(0,1fr)_280px]"
         >
           <MessagingSettingsSection messaging={settings.messaging} secrets={secrets} />
           <SectionHint
@@ -1865,7 +1858,7 @@ export function SettingsPageClient({
         {/* ── MCP Integration ── */}
         <div
           id="section-mcp"
-          className="grid scroll-mt-18 grid-cols-1 gap-x-5 rounded-lg lg:grid-cols-[1fr_280px]"
+          className="grid scroll-mt-32 grid-cols-1 gap-x-5 rounded-lg lg:grid-cols-[minmax(0,1fr)_280px]"
         >
           <McpIntegrationSection />
           <SectionHint
@@ -1885,7 +1878,7 @@ export function SettingsPageClient({
         {/* ── Feature Flags ── */}
         <div
           id="section-feature-flags"
-          className="grid scroll-mt-18 grid-cols-1 gap-x-5 rounded-lg lg:grid-cols-[1fr_280px]"
+          className="grid scroll-mt-32 grid-cols-1 gap-x-5 rounded-lg lg:grid-cols-[minmax(0,1fr)_280px]"
         >
           <SettingsSection
             icon={Flag}
@@ -2033,7 +2026,7 @@ export function SettingsPageClient({
         {/* ── Interactive Agent ── */}
         <div
           id="section-interactive-agent"
-          className="grid scroll-mt-18 grid-cols-1 gap-x-5 rounded-lg lg:grid-cols-[1fr_280px]"
+          className="grid scroll-mt-32 grid-cols-1 gap-x-5 rounded-lg lg:grid-cols-[minmax(0,1fr)_280px]"
         >
           <SettingsSection
             icon={MessageSquare}
@@ -2122,7 +2115,7 @@ export function SettingsPageClient({
         {/* ── Home Page ── */}
         <div
           id="section-home-page"
-          className="grid scroll-mt-18 grid-cols-1 gap-x-5 rounded-lg lg:grid-cols-[1fr_280px]"
+          className="grid scroll-mt-32 grid-cols-1 gap-x-5 rounded-lg lg:grid-cols-[minmax(0,1fr)_280px]"
         >
           <SettingsSection
             icon={Home}
@@ -2166,7 +2159,7 @@ export function SettingsPageClient({
         {/* ── FAB Layout ── */}
         <div
           id="section-fab-layout"
-          className="grid scroll-mt-18 grid-cols-1 gap-x-5 rounded-lg lg:grid-cols-[1fr_280px]"
+          className="grid scroll-mt-32 grid-cols-1 gap-x-5 rounded-lg lg:grid-cols-[minmax(0,1fr)_280px]"
         >
           <SettingsSection
             icon={LayoutGrid}
@@ -2192,7 +2185,7 @@ export function SettingsPageClient({
         {/* ── Integrations ── */}
         <div
           id="section-integrations"
-          className="grid scroll-mt-18 grid-cols-1 gap-x-5 rounded-lg lg:grid-cols-[1fr_280px]"
+          className="grid scroll-mt-32 grid-cols-1 gap-x-5 rounded-lg lg:grid-cols-[minmax(0,1fr)_280px]"
         >
           <SettingsSection
             icon={Github}
@@ -2212,7 +2205,7 @@ export function SettingsPageClient({
         {flags.whatsappDispatch ? (
           <div
             id="section-whatsapp"
-            className="grid scroll-mt-18 grid-cols-1 gap-x-5 rounded-lg lg:grid-cols-[1fr_280px]"
+            className="grid scroll-mt-32 grid-cols-1 gap-x-5 rounded-lg lg:grid-cols-[minmax(0,1fr)_280px]"
           >
             <SettingsSection
               icon={MessageSquare}
@@ -2233,7 +2226,7 @@ export function SettingsPageClient({
         {/* ── Database ── */}
         <div
           id="section-database"
-          className="grid scroll-mt-18 grid-cols-1 gap-x-5 rounded-lg lg:grid-cols-[1fr_280px]"
+          className="grid scroll-mt-32 grid-cols-1 gap-x-5 rounded-lg lg:grid-cols-[minmax(0,1fr)_280px]"
         >
           <SettingsSection
             icon={Database}
@@ -2274,6 +2267,6 @@ export function SettingsPageClient({
           </SectionHint>
         </div>
       </div>
-    </div>
+    </fieldset>
   );
 }

@@ -54,6 +54,13 @@ function renderShell() {
 }
 
 describe('AppShell skip link', () => {
+  it('exposes exactly one main landmark as the skip-link target', () => {
+    renderShell();
+
+    expect(screen.getAllByRole('main')).toHaveLength(1);
+    expect(screen.getByRole('main')).toHaveAttribute('id', 'main-content');
+  });
+
   it('is the first tabbable element in the shell', async () => {
     renderShell();
 
