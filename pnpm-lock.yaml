@@ -53,6 +53,14 @@ overrides:
   ajv@>=7.0.0-alpha.0 <9.0.0: ^8.20.0
   uuid@>=10.0.0 <11.1.1: ^11.1.1
 
+patchedDependencies:
+  '@typespec/openapi3@0.60.0':
+    hash: ad060cf04ff82c048076bff397ce15ea7164d3cf80f951089b068acab089122a
+    path: patches/@typespec__openapi3@0.60.0.patch
+  extract-zip@2.0.1:
+    hash: aa284e84beaaf8fea403a50efcd22dc968e8aef88f19ce9de4a25f8cb059dc1a
+    path: patches/extract-zip@2.0.1.patch
+
 importers:
 
   .:
@@ -306,7 +314,7 @@ importers:
         version: 0.60.0(@typespec/compiler@0.60.1)
       '@typespec/openapi3':
         specifier: ^0.60.0
-        version: 0.60.0(@typespec/compiler@0.60.1)(@typespec/http@0.60.0(@typespec/compiler@0.60.1))(@typespec/openapi@0.60.0(@typespec/compiler@0.60.1)(@typespec/http@0.60.0(@typespec/compiler@0.60.1)))(@typespec/versioning@0.60.1(@typespec/compiler@0.60.1))(openapi-types@12.1.3)
+        version: 0.60.0(patch_hash=ad060cf04ff82c048076bff397ce15ea7164d3cf80f951089b068acab089122a)(@typespec/compiler@0.60.1)(@typespec/http@0.60.0(@typespec/compiler@0.60.1))(@typespec/openapi@0.60.0(@typespec/compiler@0.60.1)(@typespec/http@0.60.0(@typespec/compiler@0.60.1)))(@typespec/versioning@0.60.1(@typespec/compiler@0.60.1))(openapi-types@12.1.3)
       '@typespec/prettier-plugin-typespec':
         specifier: ^0.60.0
         version: 0.60.0
@@ -12780,7 +12788,7 @@ snapshots:
       '@typespec/compiler': 0.60.1
       yaml: 2.9.0
 
-  '@typespec/openapi3@0.60.0(@typespec/compiler@0.60.1)(@typespec/http@0.60.0(@typespec/compiler@0.60.1))(@typespec/openapi@0.60.0(@typespec/compiler@0.60.1)(@typespec/http@0.60.0(@typespec/compiler@0.60.1)))(@typespec/versioning@0.60.1(@typespec/compiler@0.60.1))(openapi-types@12.1.3)':
+  '@typespec/openapi3@0.60.0(patch_hash=ad060cf04ff82c048076bff397ce15ea7164d3cf80f951089b068acab089122a)(@typespec/compiler@0.60.1)(@typespec/http@0.60.0(@typespec/compiler@0.60.1))(@typespec/openapi@0.60.0(@typespec/compiler@0.60.1)(@typespec/http@0.60.0(@typespec/compiler@0.60.1)))(@typespec/versioning@0.60.1(@typespec/compiler@0.60.1))(openapi-types@12.1.3)':
     dependencies:
       '@readme/openapi-parser': 2.6.0(openapi-types@12.1.3)
       '@typespec/compiler': 0.60.1
@@ -14002,7 +14010,7 @@ snapshots:
     dependencies:
       '@electron/get': 2.0.3
       '@types/node': 22.19.17
-      extract-zip: 2.0.1
+      extract-zip: 2.0.1(patch_hash=aa284e84beaaf8fea403a50efcd22dc968e8aef88f19ce9de4a25f8cb059dc1a)
     transitivePeerDependencies:
       - supports-color
 
@@ -14447,7 +14455,7 @@ snapshots:
 
   extend@3.0.2: {}
 
-  extract-zip@2.0.1:
+  extract-zip@2.0.1(patch_hash=aa284e84beaaf8fea403a50efcd22dc968e8aef88f19ce9de4a25f8cb059dc1a):
     dependencies:
       debug: 4.4.3
       get-stream: 5.2.0
