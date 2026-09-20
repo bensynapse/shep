@@ -16,6 +16,7 @@ import path from 'node:path';
 import fs from 'node:fs';
 import type { IWebServerService } from '../../application/ports/output/services/web-server-service.interface.js';
 import { IS_WINDOWS } from '../platform.js';
+import { createRequestListener } from './http-request-listener.js';
 
 type NextApp = ReturnType<typeof next>;
 
@@ -232,9 +233,7 @@ export class WebServerService implements IWebServerService {
     this.app = app;
 
     await new Promise<void>((resolve, reject) => {
-      const server = this.deps.createHttpServer((req, res) => {
-        handle(req!, res!);
-      });
+      const server = this.deps.createHttpServer(createRequestListener(handle));
 
       server.on('error', reject);
 

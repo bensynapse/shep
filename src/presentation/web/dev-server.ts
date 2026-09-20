@@ -18,6 +18,7 @@ import net from 'node:net';
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
+import { createRequestListener } from '@/infrastructure/services/http-request-listener.js';
 import { initializeContainer, container } from '@/infrastructure/di/container.js';
 import type { IDeploymentService } from '@/application/ports/output/services/deployment-service.interface.js';
 import { InitializeSettingsUseCase } from '@/application/use-cases/settings/initialize-settings.use-case.js';
@@ -270,9 +271,7 @@ async function main() {
   const handle = app.getRequestHandler();
   await app.prepare();
 
-  const server = http.createServer((req, res) => {
-    handle(req!, res!);
-  });
+  const server = http.createServer(createRequestListener(handle));
 
   // Forward WebSocket upgrades to Next.js for HMR/Fast Refresh
   server.on('upgrade', (req, socket, head) => {
