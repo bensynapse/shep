@@ -1,0 +1,37 @@
+name: review-and-experience-polish
+phase: Planning
+summary: >-
+  Review first, implement tested repairs, improve the existing application surface, then verify
+  behavior and record evidence.
+openQuestions: []
+phases:
+  - id: phase-1
+    name: Audit and regression repairs
+    parallel: false
+    description: >-
+      RED: reproduce an observed failure or missing user behavior. GREEN: implement the smallest
+      cohesive repair. REFACTOR: integrate with existing patterns and verify affected checks.
+  - id: phase-2
+    name: Application workspace discovery and presentation
+    parallel: false
+    description: >-
+      RED: reproduce an observed failure or missing user behavior. GREEN: implement the smallest
+      cohesive repair. REFACTOR: integrate with existing patterns and verify affected checks.
+  - id: phase-3
+    name: Browser verification and quality gates
+    parallel: false
+    description: >-
+      RED: reproduce an observed failure or missing user behavior. GREEN: implement the smallest
+      cohesive repair. REFACTOR: integrate with existing patterns and verify affected checks.
+filesToModify:
+  - src/presentation/web/components/features/applications/applications-page-client.tsx
+  - src/presentation/web/components/features/applications/applications-page-client.stories.tsx
+  - src/presentation/web/components/features/applications/application-card.tsx
+content: >
+  ## Architecture
+
+  Follow Clean Architecture; keep discovery in the presentation layer using existing domain status.
+  RED-GREEN-REFACTOR is required for every behavior change. Preserve query caching, polling,
+  stale-data recovery and imports. Test before changing implementation. Roll back only changes owned
+  by this review.
+filesToCreate: []

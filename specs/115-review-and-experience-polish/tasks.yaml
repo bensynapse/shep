@@ -1,0 +1,59 @@
+name: review-and-experience-polish
+phase: Implementation
+summary: Three dependency-ordered review, implementation and verification tasks.
+tasks:
+  - id: task-1
+    phaseId: phase-1
+    title: Audit and regression repairs
+    state: Done
+    dependencies: []
+    acceptanceCriteria:
+      - Applicable review surfaces recorded
+      - Verified failures repaired with regression coverage
+    tdd:
+      red:
+        - Reproduce source defects with targeted failing tests
+      green:
+        - Repair the demonstrated root cause
+      refactor:
+        - Review changes for duplication and unnecessary state; retain passing regression checks
+  - id: task-2
+    phaseId: phase-2
+    title: Application workspace discovery and presentation
+    state: Done
+    dependencies:
+      - task-1
+    acceptanceCriteria:
+      - Search and status filters work together
+      - Responsive presentation preserves all existing actions
+      - Working stories cover loaded, empty, loading and failed states
+    tdd:
+      red:
+        - Write tests for search, filters, loading announcements and import errors
+      green:
+        - Implement discovery and responsive workspace with the existing data flow
+      refactor:
+        - Review changes for duplication and unnecessary state; retain passing regression checks
+  - id: task-3
+    phaseId: phase-3
+    title: Browser verification and quality gates
+    state: WIP
+    dependencies:
+      - task-2
+    acceptanceCriteria:
+      - Regression tests pass
+      - Browser evidence covers desktop, mobile, light and dark
+      - Quality gate outcomes and limitations recorded
+    tdd:
+      red:
+        - Exercise browser interactions and detect rendering or accessibility failures
+      green:
+        - Repair verified regressions and rerun affected checks
+      refactor:
+        - Review changes for duplication and unnecessary state; retain passing regression checks
+content: >
+  ## Acceptance
+
+  Tests, story rendering, screenshots and quality-gate logs are recorded in evidence and the review
+  run. No claim of universal correctness is implied.
+totalEstimate: L

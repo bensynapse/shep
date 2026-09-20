@@ -1,0 +1,150 @@
+feature: 115-review-and-experience-polish
+status: verification-in-progress
+recoveredSession: 01a0c03e-d507-7391-bab7-d6e9556854bf
+resumedAt: '2026-09-20T20:02:23.419Z'
+scope: >-
+  Complete the interrupted comprehensive review, repairs and Applications experience work,
+  preserving pre-existing working-tree changes.
+provenance: >-
+  Session recovered from the local Codex JSONL transcript and run ac406ab5205b. Earlier unrelated
+  changes remain in the working tree; this report does not attribute them to this session.
+coverage:
+  - stage: architecture
+    inspected:
+      - packages/core/src/infrastructure/di/modules/register-services.ts
+      - packages/core/src/infrastructure/services/version.service.ts
+      - tests/unit/infrastructure/di/hollow-dependency-guard.test.ts
+    result: >-
+      VersionService uses explicit instance registration; compiled startup and
+      constructor-dependency guard were repaired in the recovered session.
+  - stage: dependencies
+    inspected:
+      - package.json
+      - packages/core/package.json
+      - packages/electron/package.json
+      - src/presentation/web/package.json
+      - pnpm-lock.yaml
+    result: >-
+      Compatible security updates installed; final UUID override completed on resume. Audit fell
+      from 124 reports to four high reports without a published patched version.
+  - stage: logic
+    inspected:
+      - packages/core/src/application/use-cases/applications/list-applications.use-case.ts
+      - src/presentation/web/hooks/use-settings-save.ts
+      - src/presentation/web/app/actions/open-directory.ts
+    result: >-
+      Error status precedes setup completion; failed/overlapping settings saves never report
+      success; launcher spawn errors reach the UI.
+  - stage: database
+    inspected:
+      - packages/core/src/infrastructure/persistence/sqlite/connection.ts
+      - tests/unit/infrastructure/persistence/sqlite/connection-lifecycle.test.ts
+      - tests/integration/infrastructure/repositories
+    result: >-
+      Concurrent first callers share one initialization. Failed configuration closes its connection
+      and allows retry. Repository and migration tests are included in the broad suite.
+  - stage: security
+    inspected:
+      - src/presentation/web/lib/request-guard.ts
+      - src/presentation/web/middleware.ts
+      - packages/core/src/infrastructure/services/filesystem/path-containment.ts
+      - tests/unit/presentation/web/lib/request-guard.test.ts
+      - tests/unit/presentation/web/api/attachments-containment.test.ts
+    result: >-
+      Reviewed existing token, host/origin, CSRF, webhook exemption and filesystem containment
+      changes; regression suites included. No claim of an exhaustive penetration test.
+  - stage: llm
+    inspected:
+      - packages/core/src/infrastructure/services/agents/common/agent-executor-provider.service.ts
+      - packages/core/src/infrastructure/services/agents/supervisor-agent/supervisor-graph.ts
+      - packages/core/src/application/use-cases/agents/approve-agent-run.use-case.ts
+      - tests/unit/application/use-cases/agents/approve-reject-supervisor-actor.test.ts
+    result: >-
+      Confirmed settings are read at executor resolution; graph receives an executor; user-decision
+      precedence tests included. Provider access uses mocks, not paid external calls.
+  - stage: performance
+    inspected:
+      - packages/core/src/infrastructure/services/agents/common/executors/process-stream.ts
+      - src/presentation/web/components/features/applications/applications-page-client.tsx
+    result: >-
+      Fixed reproduced retention after oversized line overflow. Search/filter use the
+      already-fetched list and retain polling/caching. No production throughput benchmark.
+  - stage: observability
+    inspected:
+      - src/presentation/web/app/api/health/route.ts
+      - packages/core/src/infrastructure/services/agents/feature-agent/telemetry-failure-counter.ts
+      - tests/unit/infrastructure/services/diagnostics/daemon-health-probe.service.test.ts
+    result: >-
+      Health handler keeps literal Next route config; recurring telemetry failures are bounded and
+      visible. Existing readiness/diagnostic regression tests included.
+  - stage: uiux
+    inspected:
+      - src/presentation/web/components/features/applications/applications-page-client.tsx
+      - src/presentation/web/components/features/applications/application-card.tsx
+      - src/presentation/web/app/globals.css
+    result: >-
+      Added discoverable creation actions, search plus status filters, clear loading/error/no-match
+      states, semantic card links and theme contrast. Colocated stories and recovered browser
+      evidence cover interaction and rendering.
+  - stage: mobile
+    inspected:
+      - evidence/applications-mobile-light.png
+      - evidence/applications-mobile-dark.png
+      - evidence/applications-narrow.png
+      - evidence/browser-review.json
+    result: >-
+      Recovered browser checks cover 390px and 320px widths, no horizontal overflow, keyboard
+      focus/actions and zero automated accessibility violations.
+  - stage: qa
+    inspected:
+      - tests/unit
+      - tests/integration
+      - tests/e2e/cli
+      - tests/e2e/tui
+      - .coding-agent/runs/ac406ab5205b/verify-browser.cjs
+    result: >-
+      Recovered CLI/TUI end-to-end pass: 87 tests. Interrupted broad tests and Storybook build
+      require completion on resume; isolated live settings checks pending.
+  - stage: debug
+    inspected:
+      - tests/integration/infrastructure/services/agents/process-stream-memory.test.ts
+      - tests/unit/presentation/web/hooks/use-settings-save.test.tsx
+      - tests/unit/infrastructure/persistence/sqlite/connection-lifecycle.test.ts
+    result: >-
+      Retained RED/GREEN evidence for concrete regressions; new stream test fails with 32,467,816
+      bytes retained before repair and passes after repair.
+  - stage: documentation
+    inspected:
+      - AGENTS.md
+      - docs/development/spec-driven-workflow.md
+      - docs/development/tdd-guide.md
+      - spec.yaml
+      - research.yaml
+      - plan.yaml
+      - tasks.yaml
+    result: >-
+      Existing spec workflow and TDD cycles retained; progress and verification records updated
+      during resumption. Generated Markdown must come from YAML.
+limitations:
+  - >-
+    Four high dependency advisory reports remain: two for extract-zip in Electron installation and
+    two for TypeSpec compiler/OpenAPI emitter. No published patched version is listed as of
+    2026-09-20; audit remains nonzero.
+  - >-
+    Desktop packaging on macOS/Windows, real LLM credentials and external messaging/cloud deployment
+    integrations are not exercised.
+  - TV, scraping and trading-specific stages are not applicable to the selected project surfaces.
+  - >-
+    Automated accessibility checks and source review cannot establish universal correctness or
+    accessibility.
+advisorySources:
+  - https://github.com/advisories/GHSA-jmr9-qjv8-65gv
+  - https://github.com/advisories/GHSA-7pqw-9j4j-h8q3
+  - https://github.com/advisories/GHSA-2q42-4q24-7rgv
+verification:
+  lint: passed after autofix
+  stories: passed
+  executorRegression: 18 files / 519 tests passed; includes bounded-memory integration test
+  broadSuite: running
+  storybookBuild: pending
+  isolatedSettings: pending
