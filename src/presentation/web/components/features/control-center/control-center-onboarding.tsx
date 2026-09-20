@@ -150,7 +150,7 @@ export function ControlCenterOnboarding({
     <div
       data-testid="control-center-onboarding"
       className={cn(
-        'relative flex h-full w-full flex-col items-center overflow-y-auto px-4 py-8 sm:px-8',
+        'relative flex h-full w-full flex-col items-center overflow-y-auto px-4 pt-16 pb-8 sm:px-8 sm:pt-8',
         className
       )}
     >
