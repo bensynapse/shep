@@ -6,11 +6,29 @@
  */
 
 import { test, expect } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import { COLD_ROUTE_READY_TIMEOUT_MS, COLD_ROUTE_TEST_TIMEOUT_MS } from './helpers/timeouts';
 
 test.describe('i18n: language switching', () => {
   // First spec to land on /settings, so it may pay the cold route compile.
   test.describe.configure({ timeout: COLD_ROUTE_TEST_TIMEOUT_MS });
+
+  // Language is a persisted singleton setting, so every case must restore it
+  // before handing the server to another browser context or spec.
+  async function resetLanguage(page: Page) {
+    await page.goto('/settings');
+    const select = page.getByTestId('language-select');
+    await expect(select).toBeVisible({ timeout: COLD_ROUTE_READY_TIMEOUT_MS });
+    await select.click();
+    await page.getByRole('option', { name: 'English', exact: true }).click();
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+    await expect(page.getByTestId('language-settings-section').getByText('Saving...')).toHaveCount(
+      0
+    );
+  }
+
+  test.beforeEach(async ({ page }) => resetLanguage(page));
+  test.afterEach(async ({ page }) => resetLanguage(page));
 
   test('switching to Russian updates UI text immediately', async ({ page }) => {
     // Navigate to settings page
