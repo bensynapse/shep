@@ -63,8 +63,16 @@ additionalBrowserRepairs:
     full production suite caught the old test comparing a node's provisional name with its final
     agent-generated name in the drawer. Target stable feature IDs and require both drawers,
     including the second click that previously ran only when another feature happened to exist.
+  - >-
+    The strict fork browser gate exposed a messaging settings race: the enable-save response
+    overwrote a freshly edited gateway URL and pairing used the old URL. Two deterministic unit
+    regressions reproduce the overwrite. Synchronize fields independently and preserve unsaved
+    gateway drafts while still accepting server updates to pristine fields. The browser test now
+    waits for the actual rejection message before checking that pairing stayed closed.
 localVerification:
-  unit: 1064 files and 12645 tests passed; 259 affected UI tests also passed after control resizing.
+  unit: >-
+    The earlier complete local run passed 1064 files and 12645 tests; 259 affected UI tests also
+    passed after control resizing. The messaging follow-up adds three focused regression cases.
   integration: 152 files and 1749 tests passed.
   cliTui: >-
     87 scenarios verified. The three CLI UI cases were rerun separately and passed after a
@@ -76,6 +84,10 @@ localVerification:
   dialogAccessibility: Five consecutive runs passed after waiting for finite animations.
   browser: All 73 scenarios passed against the rebuilt production release with zero retries and zero skips.
   browserRepeated: Ten editor round-trips and ten populated application menu scans passed with zero retries.
+  messagingRegression: >-
+    All 15 component tests pass, including the two initially failing draft-overwrite regressions
+    and server-update coverage. Ten complete pairing flows and ten invalid-URL rejection flows
+    pass against the rebuilt production release with zero retries. Release and Storybook builds pass.
   agentEditor: >-
     A navigation stall occurred once despite the increased cold-route budget. It did not recur
     in five consecutive traced runs or the final complete browser run, but both initial remote
@@ -87,6 +99,7 @@ localVerification:
 forkVerification:
   pullRequest: https://github.com/bensynapse/shep/pull/1
   initialRun: https://github.com/bensynapse/shep/actions/runs/35590184954
+  strictBrowserRun: https://github.com/bensynapse/shep/actions/runs/35593066162
   initialHead: 813b0edef277086b1971f3ac63b02f30911f30e6
   initialSourceTree: bc45e9f0d69d33301d45c3fae004c6a7d2ca8dc3
   treeProof: The fork's PR merge tree exactly matched the branch source tree.

@@ -153,6 +153,53 @@ describe('MessagingSettingsSection', () => {
     await waitFor(() => expect(mockBeginPairing).not.toHaveBeenCalled());
   });
 
+  it('keeps an edited gateway URL when the enable save refreshes server props', () => {
+    const config = { ...enabledUnpairedConfig, enabled: false };
+    const { rerender } = render(<MessagingSettingsSection messaging={config} />);
+    fireEvent.click(screen.getByTestId('switch-messaging-enabled'));
+    fireEvent.change(screen.getByTestId('input-gateway-url'), {
+      target: { value: 'not a url' },
+    });
+
+    rerender(<MessagingSettingsSection messaging={enabledUnpairedConfig} />);
+
+    expect(screen.getByTestId('input-gateway-url')).toHaveValue('not a url');
+    fireEvent.click(screen.getByTestId('btn-telegram-pair'));
+    expect(mockBeginPairing).not.toHaveBeenCalled();
+    expect(toast.error).toHaveBeenCalledWith('Set a valid Gateway URL before pairing');
+  });
+
+  it('preserves newer gateway edits when an earlier save is acknowledged', () => {
+    const { rerender } = render(<MessagingSettingsSection messaging={enabledUnpairedConfig} />);
+    const input = screen.getByTestId('input-gateway-url');
+    fireEvent.change(input, { target: { value: 'https://first.example.com' } });
+    fireEvent.blur(input);
+    fireEvent.change(input, { target: { value: 'https://second.example.com' } });
+
+    rerender(
+      <MessagingSettingsSection
+        messaging={{ ...enabledUnpairedConfig, gatewayUrl: 'https://first.example.com' }}
+      />
+    );
+
+    expect(input).toHaveValue('https://second.example.com');
+    fireEvent.blur(input);
+    expect(mockUpdateSettings).toHaveBeenLastCalledWith({
+      messaging: { ...enabledUnpairedConfig, gatewayUrl: 'https://second.example.com' },
+    });
+  });
+
+  it('adopts server gateway updates when the field has not been edited', () => {
+    const { rerender } = render(<MessagingSettingsSection messaging={enabledUnpairedConfig} />);
+    rerender(
+      <MessagingSettingsSection
+        messaging={{ ...enabledUnpairedConfig, gatewayUrl: 'https://updated.example.com' }}
+      />
+    );
+
+    expect(screen.getByTestId('input-gateway-url')).toHaveValue('https://updated.example.com');
+  });
+
   it('shows disconnect-all row when at least one platform is paired', () => {
     render(<MessagingSettingsSection messaging={telegramPairedConfig} />);
     expect(screen.getByTestId('btn-disconnect-all')).toBeDefined();

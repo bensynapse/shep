@@ -128,11 +128,15 @@ test.describe('messaging settings', () => {
       await enableSwitch.click();
     }
 
-    await page.getByTestId('input-gateway-url').fill('not a url');
-    // Don't blur (would trigger a save error toast) — click pair directly
+    const gatewayInput = page.getByTestId('input-gateway-url');
+    await gatewayInput.fill('not a url');
     await page.getByTestId('btn-telegram-pair').click();
 
-    // The pairing dialog should NOT appear
+    // Observe the handler's rejection before asserting that no dialog opened.
+    await expect(
+      page.getByText('Set a valid Gateway URL before pairing', { exact: true })
+    ).toBeVisible();
+    await expect(gatewayInput).toHaveValue('not a url');
     await expect(page.getByTestId('messaging-pairing-dialog')).toBeHidden();
   });
 });

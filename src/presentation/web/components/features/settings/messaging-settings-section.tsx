@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { MessageCircle, Check, Copy, Link2, ShieldCheck, Unplug } from 'lucide-react';
 import { toast } from 'sonner';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -73,21 +73,27 @@ export function MessagingSettingsSection({ messaging, secrets }: MessagingSettin
 
   const [enabled, setEnabled] = useState(config.enabled);
   const [gatewayUrl, setGatewayUrl] = useState(config.gatewayUrl ?? '');
-  const [telegram, setTelegram] = useState(config.telegram);
-  const [whatsapp, setWhatsapp] = useState(config.whatsapp);
+  const previousGatewayUrl = useRef(config.gatewayUrl ?? '');
+  const telegram = config.telegram;
+  const whatsapp = config.whatsapp;
   const { save, showSaving: isPending, showSaved } = useSettingsSave();
 
   const [pairing, setPairing] = useState<PairingSessionState | null>(null);
   const [pairingLoading, setPairingLoading] = useState(false);
   const [chatIdInput, setChatIdInput] = useState('');
 
-  // Keep local state in sync when the server prop changes after a server action.
   useEffect(() => {
     setEnabled(config.enabled);
-    setGatewayUrl(config.gatewayUrl ?? '');
-    setTelegram(config.telegram);
-    setWhatsapp(config.whatsapp);
-  }, [config.enabled, config.gatewayUrl, config.telegram, config.whatsapp]);
+  }, [config.enabled]);
+
+  // Server actions refresh all settings props. Preserve a newer local draft
+  // while adopting server changes to a field the user has not edited.
+  useEffect(() => {
+    const previous = previousGatewayUrl.current;
+    const next = config.gatewayUrl ?? '';
+    setGatewayUrl((current) => (current === previous ? next : current));
+    previousGatewayUrl.current = next;
+  }, [config.gatewayUrl]);
 
   const saveTopLevel = useCallback(
     (payload: { enabled?: boolean; gatewayUrl?: string }) => {
