@@ -30,6 +30,7 @@ export async function expectAccessible(page: Page) {
     return result.violations.map(({ id, nodes }) => ({
       id,
       targets: nodes.map((node) => node.target),
+      details: nodes.map((node) => node.failureSummary),
     }));
   });
   expect(violations).toEqual([]);

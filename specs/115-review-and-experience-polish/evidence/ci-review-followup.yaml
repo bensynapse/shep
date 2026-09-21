@@ -51,9 +51,13 @@ additionalBrowserRepairs:
   - Enable and restore the workflow flag through the UI so its accessibility case is exercised.
   - >-
     Keep the enabled agent picker readable while a workflow disables message composition.
-    The production browser suite reproduced low contrast caused by opacity on the entire
-    composer. Remove that inherited dimming, retain the individual disabled controls, and add
+    Remove inherited dimming from the composer, retain the individual disabled controls, and add
     colocated Storybook examples. The disabled-input and stop-action regressions remain green.
+  - >-
+    Repeated production scans also caught the asynchronously loaded picker midway through its
+    enable transition, with a measured contrast ratio of 3.12. Wait for its enabled state before
+    settling animations and scanning the populated page. Include axe failure summaries so future
+    failures preserve the measured colors and ratio.
 localVerification:
   unit: 1064 files and 12645 tests passed; 259 affected UI tests also passed after control resizing.
   integration: 152 files and 1749 tests passed.
@@ -66,6 +70,7 @@ localVerification:
   linuxDesktopAppsOnly: passed
   dialogAccessibility: Five consecutive runs passed after waiting for finite animations.
   browser: All 73 scenarios passed against the rebuilt production release with zero retries and zero skips.
+  browserRepeated: Ten editor round-trips and ten populated application menu scans passed with zero retries.
   agentEditor: >-
     A navigation stall occurred once despite the increased cold-route budget. It did not recur
     in five consecutive traced runs or the final complete browser run, but both initial remote

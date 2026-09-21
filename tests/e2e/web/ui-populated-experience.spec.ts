@@ -22,6 +22,8 @@ test.describe('populated page accessibility', () => {
 
   test('application overflow exposes keyboard menu actions', async ({ page }) => {
     await page.goto(`/application/${fixtures.ids.application}`);
+    // The model action enables the picker asynchronously; scan after its loading fade.
+    await expect(page.getByRole('combobox', { name: 'Agent and model' })).toBeEnabled();
     await page.getByRole('button', { name: 'More options', exact: true }).click();
     const menu = page.getByRole('menu');
     await expect(menu).toBeVisible();
@@ -116,8 +118,10 @@ test.describe('populated page accessibility', () => {
           await expect(page.getByTestId('repository-drawer')).toBeVisible();
         if (surface === 'feature')
           await expect(page.getByTestId('feature-drawer-actions')).toBeVisible();
-        if (surface === 'application')
+        if (surface === 'application') {
           await expect(page.getByText('No file open', { exact: true })).toBeVisible();
+          await expect(page.getByRole('combobox', { name: 'Agent and model' })).toBeEnabled();
+        }
         if (surface === 'agent-editor')
           await expect(page.getByTestId('prompt-textarea-implement.system')).toBeVisible();
         if (surface === 'security-inventory')
