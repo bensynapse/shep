@@ -58,6 +58,11 @@ additionalBrowserRepairs:
     enable transition, with a measured contrast ratio of 3.12. Wait for its enabled state before
     settling animations and scanning the populated page. Include axe failure summaries so future
     failures preserve the measured colors and ratio.
+  - >-
+    Isolate drawer clickability with explicit Implementation and Review feature fixtures. The
+    full production suite caught the old test comparing a node's provisional name with its final
+    agent-generated name in the drawer. Target stable feature IDs and require both drawers,
+    including the second click that previously ran only when another feature happened to exist.
 localVerification:
   unit: 1064 files and 12645 tests passed; 259 affected UI tests also passed after control resizing.
   integration: 152 files and 1749 tests passed.
