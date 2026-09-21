@@ -50,6 +50,13 @@ phases:
       regressions. GREEN: repair Linux packaging, Windows fixtures, Control Center target sizes,
       and the reviewed consent and request handling gaps. REFACTOR: share existing primitives,
       document contributor requirements and verify every required job on the final pushed head.
+      Run the identical source tree and workflow matrix in the owned fork while upstream
+      approval is pending. Inspect successful browser jobs for retries and reproduce any
+      remaining cold-navigation stalls before accepting the browser gate.
+      Exercise the release built by CI through its production CLI server, keep failed browser
+      traces available, and reject retry-only passes instead of accepting flaky jobs.
+      Repair any production-only accessibility regression and cover disabled chat composition
+      alongside its still-enabled agent picker in Storybook.
 filesToModify:
   - packages/electron/electron-builder.yml
   - packages/electron/electron-builder.apps-only.yml

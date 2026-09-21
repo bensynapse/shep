@@ -51,7 +51,6 @@ const GRANDFATHERED = new Set([
   'src/presentation/web/components/features/aspm/aspm-inventory-tree/aspm-repo-actions.tsx',
   'src/presentation/web/components/features/aspm/aspm-inventory-tree/aspm-row-actions-manager.tsx',
   'src/presentation/web/components/features/aspm/aspm-inventory-tree/aspm-row-actions.tsx',
-  'src/presentation/web/components/features/chat/ChatComposer.tsx',
   'src/presentation/web/components/features/chat/ChatMessageList.tsx',
   'src/presentation/web/components/features/chat/ChatSheet.tsx',
   'src/presentation/web/components/features/chat/operation-bubble.tsx',

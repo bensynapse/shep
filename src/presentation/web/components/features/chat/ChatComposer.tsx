@@ -23,7 +23,7 @@ export interface ChatComposerProps {
   onPickFiles: () => void;
   /** Agent/model picker rendered in the controls row. */
   agentPicker?: React.ReactNode;
-  /** When true, the composer is visually disabled and input is blocked. */
+  /** Blocks message input and sending while keeping auxiliary controls readable. */
   disabled?: boolean;
   /**
    * Stops the running agent. Wired to the real stop endpoint by the host —
@@ -57,7 +57,7 @@ export function ChatComposer({
   const containerRef = useRef<HTMLDivElement>(null);
 
   return (
-    <ComposerPrimitive.Root className={cn('shrink-0 border-t p-3', disabled && 'opacity-50')}>
+    <ComposerPrimitive.Root className="shrink-0 border-t p-3">
       <div
         onDragEnter={onDragEnter}
         onDragLeave={onDragLeave}

@@ -1,5 +1,12 @@
 # Lessons Learned
 
+## Use the fork to verify CI while upstream approval is pending
+
+An upstream approval gate does not prevent testing in an owned fork. Check fork
+Actions permissions and run the same commit and CI matrix through a draft PR.
+Verify the merge tree matches the intended source and keep fork results distinct
+from upstream approval. Do this before treating maintainer approval as an impasse.
+
 ## Finish against the pushed CI result and current review
 
 Local green checks do not complete a CI repair. Read every current PR comment,
