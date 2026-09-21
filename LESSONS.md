@@ -1,5 +1,12 @@
 # Lessons Learned
 
+## Finish against the pushed CI result and current review
+
+Local green checks do not complete a CI repair. Read every current PR comment,
+reproduce each reported failure, and verify every required job on the final pushed
+commit, including Windows and both Linux desktop variants. Keep PR verification
+claims current and give every consent gate a usable approval command.
+
 ## Verify shared artwork and complete pages in both themes
 
 A successful page load and an automated accessibility scan do not prove visual

@@ -1,0 +1,74 @@
+date: '2026-09-21'
+pullRequest: https://github.com/shep-ai/shep/pull/876
+review: https://github.com/shep-ai/shep/pull/876#issuecomment-5756364480
+failedRun: https://github.com/shep-ai/shep/actions/runs/35542065053
+reviewedHead: 1d580154e7a8881e8832312515a50f32adccc991
+scope: Repair the four failed jobs and all actionable findings in the review.
+repairs:
+  - finding: Both Linux Electron builds rejected the scoped package name.
+    change: Give the Linux executables explicit, distinct names, shep and shep-apps.
+    proof: Both complete AppImage packaging commands succeeded locally.
+  - finding: Seven Windows unit failures assumed POSIX paths and permissions.
+    change: >-
+      Use real temporary attachment paths and platform delimiters; compare filesystem-reported
+      permission bits, retain POSIX-specific assertions where meaningful, and exercise portable
+      directory-creation failure on every platform.
+    proof: Affected suites pass locally; the Windows CI job is the platform-specific acceptance gate.
+  - finding: Repository toolbar targets became too small at the default canvas zoom.
+    change: >-
+      Enlarge repository and session controls to 32 CSS pixels and tighten toolbar gaps. Add an
+      independent standalone-repository fixture instead of depending on another test's leftovers.
+    proof: >-
+      New geometry assertions failed at 20.4 pixels before the repair. They now pass at the default
+      zoom alongside the unchanged axe target-size rule in both themes.
+  - finding: Repository dev configuration had no usable approval path.
+    change: >-
+      Add shep dev approve using the shared target resolver. Preview all executable fields and
+      require --fingerprint to record consent. Re-read and compare before writing approval.
+    proof: >-
+      Four CLI regressions, a changed-command regression, all locale parity checks and a packaged
+      CLI smoke test with spaces in the repository path pass. Preview writes no approval and
+      approval executes no repository commands.
+  - finding: Webhook authentication exceptions used raw prefix matching.
+    change: >-
+      Exempt only the two exact self-authenticating endpoints, including a trailing slash.
+      Child paths never inherit the exemption, so no routing normalization assumption is needed.
+    proof: >-
+      Six new plain, encoded and backslash traversal/child-path regressions failed before the
+      repair and now enforce both the token and Host gates.
+  - finding: Setup command logs decoded UTF-8 independently per chunk.
+    change: Use the shared line accumulator with independent stdout and stderr decoders.
+    proof: Byte-by-byte interleaved Unicode and an unterminated error line fail before and pass after.
+  - finding: Verdict parser prose and pnpm prerequisites were inaccurate.
+    change: >-
+      Document escalation for conflicting verdicts, repeated identical verdicts, and the pnpm
+      minimum moving from 8 to 10 to match the pinned CI toolchain.
+additionalBrowserRepairs:
+  - Wait for settings saves before navigating away from the chat-toggle test.
+  - Wait for language action responses; the old saving selector targeted the wrong section.
+  - Give the first agent-editor navigation the existing cold-route timeout budget.
+  - Wait for finite UI animations before measuring accessibility; keep every axe rule enabled.
+  - Enable and restore the workflow flag through the UI so its accessibility case is exercised.
+localVerification:
+  unit: 1064 files and 12645 tests passed; 259 affected UI tests also passed after control resizing.
+  integration: 152 files and 1749 tests passed.
+  cliTui: >-
+    87 scenarios verified. The three CLI UI cases were rerun separately and passed after a
+    concurrent browser server held Next's development lock during the initial run.
+  releaseBuild: passed
+  storybookBuild: passed
+  linuxDesktopFull: passed
+  linuxDesktopAppsOnly: passed
+  dialogAccessibility: Five consecutive runs passed after waiting for finite animations.
+  browser: All 73 scenarios passed with zero retries and zero skips.
+  agentEditor: >-
+    A navigation stall occurred once despite the increased cold-route budget. It did not recur
+    in five consecutive traced runs or the final complete browser run. Remote browser CI remains
+    an independent acceptance gate; no route assertion was removed or softened.
+  qualityGates: Root and web typechecks, lint, format, story coverage and spec validation passed.
+remoteAcceptance:
+  source: https://github.com/shep-ai/shep/pull/876/checks
+  requirement: Every applicable check must succeed on the final pushed head.
+  note: >-
+    This record describes local evidence. The live PR checks provide the authoritative Windows,
+    macOS and Linux matrix result; local Linux passes never substitute for those jobs.

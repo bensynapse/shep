@@ -30,6 +30,7 @@ import {
 import {
   approveRepoDevConfig,
   readRepoDevConfig,
+  readValidatedRepoDevConfig,
 } from '@/infrastructure/services/deployment/repo-dev-config-reader.js';
 
 const APPROVE_ALL = { isApproved: (): boolean => true };
@@ -90,6 +91,15 @@ describe('computeRepoDevConfigFingerprint', () => {
 });
 
 describe('readRepoDevConfig consent gate', () => {
+  it('refuses consent if the command changed since its fingerprint was reviewed', () => {
+    writeDevConfig({ command: 'make dev' });
+    const reviewed = computeRepoDevConfigFingerprint(readValidatedRepoDevConfig(repoDir)!);
+    writeDevConfig({ command: 'make different' });
+
+    expect(approveRepoDevConfig(repoDir, reviewed)).toBe(false);
+    expect(readRepoDevConfig(repoDir)).toBeNull();
+  });
+
   it('withholds an unapproved command', () => {
     writeDevConfig({ command: 'make dev' });
 

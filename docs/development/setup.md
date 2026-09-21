@@ -15,8 +15,8 @@ Complete guide to setting up a development environment for Shep AI CLI.
 Node 22 is pinned in `.nvmrc` and enforced by `engines.node` (`>=22.0.0`); every CI
 workflow runs on Node 22.
 
-pnpm **10 or newer** is required: `packageManager` is `pnpm@10.33.0` and
-`pnpm-lock.yaml` is `lockfileVersion: '9.0'`, which pnpm 8 and 9 cannot read.
+pnpm **10 or newer** is required by `engines.pnpm`; `packageManager` pins
+`pnpm@10.33.0`. The minimum was raised from 8 to 10 to match the CI toolchain.
 
 Install pnpm: `npm install -g pnpm@10` (or `corepack enable`, which picks up the
 `packageManager` field automatically)

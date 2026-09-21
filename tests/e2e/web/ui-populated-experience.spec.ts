@@ -122,8 +122,28 @@ test.describe('populated page accessibility', () => {
           await expect(page.getByTestId('prompt-textarea-implement.system')).toBeVisible();
         if (surface === 'security-inventory')
           await expect(page.getByText('Never', { exact: true }).first()).toBeVisible();
-        if (surface === 'control-center')
+        if (surface === 'control-center') {
           await expect(page.getByTestId('feature-node-title').first()).toBeVisible();
+          const repository = page.getByTestId('repository-node-card').filter({
+            has: page
+              .getByTestId('repository-node-name')
+              .filter({ hasText: 'UI review standalone repository' }),
+          });
+          await expect(repository).toBeVisible();
+          for (const name of ['Chat with agent', 'View sessions', 'New feature']) {
+            const control = repository.getByRole('button', { name, exact: true });
+            await expect(control).toBeVisible();
+            const bounds = (await control.boundingBox())!;
+            expect(
+              bounds.width,
+              `${name} target width after canvas scaling`
+            ).toBeGreaterThanOrEqual(24);
+            expect(
+              bounds.height,
+              `${name} target height after canvas scaling`
+            ).toBeGreaterThanOrEqual(24);
+          }
+        }
         await expectAccessible(page);
       });
     }

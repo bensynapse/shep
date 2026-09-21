@@ -819,6 +819,15 @@
           "empty": "No había plan de ejecución guardado para {{path}}",
           "failed": "No se pudo borrar el plan de ejecución"
         }
+      },
+      "approve": {
+        "description": "Revisar y aprobar los comandos de desarrollo del repositorio",
+        "fingerprintOption": "Aprobar solo esta huella de comandos revisada",
+        "invalid": "No hay un .shep/dev.json válido en {{path}}",
+        "review": "Revise estos comandos y repita el comando con --fingerprint {{fingerprint}}. La aprobación no los ejecuta.",
+        "changed": "La huella no coincide con la configuración actual. Revísela de nuevo antes de aprobar.",
+        "approved": "Comandos de desarrollo aprobados. Inicie el servidor cuando esté listo.",
+        "failed": "No se pudieron aprobar los comandos de desarrollo"
       }
     },
     "agent": {

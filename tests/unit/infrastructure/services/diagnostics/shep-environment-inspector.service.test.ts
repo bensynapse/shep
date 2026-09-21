@@ -5,7 +5,7 @@
 
 import 'reflect-metadata';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { chmodSync, mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { chmodSync, mkdtempSync, mkdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -37,6 +37,12 @@ describe('paths', () => {
 });
 
 describe('readSensitivePermissions', () => {
+  it('marks POSIX permission checks meaningful only on supported platforms', () => {
+    expect(new ShepEnvironmentInspectorService().arePosixPermissionsMeaningful()).toBe(
+      process.platform !== 'win32'
+    );
+  });
+
   it('reports the mode bits of the home directory and the database file', async () => {
     chmodSync(home, 0o700);
     writeFileSync(join(home, 'data'), 'x');
@@ -47,10 +53,10 @@ describe('readSensitivePermissions', () => {
     const homeResult = results.find((r) => r.path === home);
     expect(homeResult?.exists).toBe(true);
     expect(homeResult?.isDirectory).toBe(true);
-    expect(homeResult?.mode).toBe(0o700);
+    expect(homeResult?.mode).toBe(statSync(home).mode & 0o777);
 
     const dbResult = results.find((r) => r.path === join(home, 'data'));
-    expect(dbResult?.mode).toBe(0o600);
+    expect(dbResult?.mode).toBe(statSync(join(home, 'data')).mode & 0o777);
     expect(dbResult?.isDirectory).toBe(false);
   });
 
@@ -61,11 +67,14 @@ describe('readSensitivePermissions', () => {
     expect(dbResult?.mode).toBeNull();
   });
 
-  it('reports the group- and world-readable bits this machine actually has', async () => {
-    chmodSync(home, 0o775);
-    const results = await new ShepEnvironmentInspectorService().readSensitivePermissions();
-    expect(results.find((r) => r.path === home)?.mode).toBe(0o775);
-  });
+  it.skipIf(process.platform === 'win32')(
+    'reports group- and world-readable POSIX bits',
+    async () => {
+      chmodSync(home, 0o775);
+      const results = await new ShepEnvironmentInspectorService().readSensitivePermissions();
+      expect(results.find((r) => r.path === home)?.mode).toBe(0o775);
+    }
+  );
 });
 
 describe('readDiskSpace', () => {
@@ -89,19 +98,30 @@ describe('isWritable', () => {
     expect(await inspector.isWritable(inspector.getWorktreeRootPath())).toBe(true);
   });
 
-  it('reports false for a directory that cannot be written', async () => {
-    const locked = join(home, 'locked');
-    mkdirSync(locked);
-    chmodSync(locked, 0o500);
-    try {
-      const writable = await new ShepEnvironmentInspectorService().isWritable(
-        join(locked, 'child')
-      );
-      expect(writable).toBe(false);
-    } finally {
-      chmodSync(locked, 0o700);
-    }
+  it('reports false when a file prevents creating the requested directory', async () => {
+    const blocker = join(home, 'file');
+    writeFileSync(blocker, 'not a directory');
+    expect(await new ShepEnvironmentInspectorService().isWritable(join(blocker, 'child'))).toBe(
+      false
+    );
   });
+
+  it.skipIf(process.platform === 'win32' || process.getuid?.() === 0)(
+    'reports false for a directory that cannot be written',
+    async () => {
+      const locked = join(home, 'locked');
+      mkdirSync(locked);
+      chmodSync(locked, 0o500);
+      try {
+        const writable = await new ShepEnvironmentInspectorService().isWritable(
+          join(locked, 'child')
+        );
+        expect(writable).toBe(false);
+      } finally {
+        chmodSync(locked, 0o700);
+      }
+    }
+  );
 });
 
 describe('readLogsFootprint', () => {

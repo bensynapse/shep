@@ -162,7 +162,7 @@ export function RepositoryNode({
 
           <div
             className={cn(
-              'flex shrink-0 items-center gap-2',
+              'flex shrink-0 items-center gap-1',
               (data.repositoryPath ?? data.onAdd) && 'ms-auto'
             )}
             onClick={(e) => e.stopPropagation()}
@@ -200,7 +200,7 @@ export function RepositoryNode({
                         data.onAdd?.();
                       }}
                       className={cn(
-                        'flex h-6 shrink-0 cursor-pointer items-center gap-0.5 rounded bg-blue-600 px-1.5 text-[11px] font-bold text-white transition-colors hover:bg-blue-600 dark:bg-amber-500 dark:text-neutral-950 dark:hover:bg-amber-400',
+                        'flex h-8 shrink-0 cursor-pointer items-center gap-0.5 rounded bg-blue-600 px-1.5 text-[11px] font-bold text-white transition-colors hover:bg-blue-600 dark:bg-amber-500 dark:text-neutral-950 dark:hover:bg-amber-400',
                         data.pulseAdd && 'animate-pulse-cta'
                       )}
                     >
@@ -377,7 +377,7 @@ function ToolbarActionButton({ action }: { action: RepositoryAction }) {
               icon={action.icon}
               iconOnly
               variant="ghost"
-              size="icon-xs"
+              size="icon-sm"
               disabled={action.disabled}
               {...(!action.error && { className: TONE_CLASS[action.tone] })}
             />
@@ -408,7 +408,7 @@ function ChatActionButton({
         <TooltipTrigger asChild>
           <Button
             variant="ghost"
-            size="icon-xs"
+            size="icon-sm"
             aria-label={action.label}
             onClick={(e) => {
               e.stopPropagation();

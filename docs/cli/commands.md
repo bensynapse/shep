@@ -713,7 +713,18 @@ graph (see [../architecture/agent-system.md](../architecture/agent-system.md)).
 | `shep dev plan set`     | Pin a run plan of your own                                   |
 | `shep dev plan clear`   | Clear the cached run plan so the next start re-analyzes      |
 
-A repo may also pin its own configuration in `<repo>/.shep/dev.json`.
+A repo may also pin its own configuration in `<repo>/.shep/dev.json`. Because this
+file can arrive through a Git pull, its executable settings require local consent.
+Until approved, Shep ignores the file and uses the detector chain.
+
+Run `shep dev approve --repo /absolute/path/to/repo` to review the command, working
+directory, package manager, setup commands and fingerprint. After reviewing them,
+repeat the command with `--fingerprint <displayed-hash>` to record approval. The
+command also supports the shared `--app` and `--feature` target flags. Approval
+does not execute the commands; start the server with `shep dev start` afterward.
+If executable settings change between review and approval, the command refuses
+the stale fingerprint. Later changes require another approval. Consent is stored
+under `SHEP_HOME/approvals/`, outside the repository, for this repository path.
 
 **Source**: `src/presentation/cli/commands/dev/`
 

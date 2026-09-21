@@ -132,10 +132,14 @@ export function parseAllowedHostsEnv(raw: string | undefined): string[] {
     .filter((entry) => entry.length > 0);
 }
 
-/** Is this one of the routes that authenticates its own callers? */
+/**
+ * Only these exact endpoints verify their own callers. Never exempt children:
+ * a raw prefix can contain dot segments or encoded separators that routing
+ * later resolves to an unrelated API. A trailing slash is the only alias.
+ */
 export function isExternallyAuthenticatedPath(pathname: string): boolean {
   return EXTERNALLY_AUTHENTICATED_PATHS.some(
-    (allowed) => pathname === allowed || pathname.startsWith(`${allowed}/`)
+    (allowed) => pathname === allowed || pathname === `${allowed}/`
   );
 }
 

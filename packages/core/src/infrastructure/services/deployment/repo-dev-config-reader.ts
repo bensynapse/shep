@@ -98,7 +98,7 @@ export function readRepoDevConfig(
         ? ` (setup: ${config.setupCommands.map((entry) => JSON.stringify(entry)).join(', ')})`
         : '';
     log.warn(
-      `${join(repoPath, REPO_DEV_CONFIG_PATH)} asks to run ${JSON.stringify(config.command)}${setup} — not approved on this machine, so it is being ignored and detection runs instead. Approve it with approveRepoDevConfig(${JSON.stringify(repoPath)}) (fingerprint ${fingerprint}).`
+      `${join(repoPath, REPO_DEV_CONFIG_PATH)} asks to run ${JSON.stringify(config.command)}${setup} — not approved on this machine, so it is being ignored and detection runs instead. Run shep dev approve with --repo pointing to this directory to review and approve it (fingerprint ${fingerprint}).`
     );
     return null;
   }
@@ -108,15 +108,19 @@ export function readRepoDevConfig(
 
 /**
  * Record consent for whatever the file currently declares.
+ * An expected fingerprint binds consent to previously reviewed executable content.
  *
  * @returns `true` when an approval was recorded, `false` when the document
- *          declares nothing valid to approve.
+ *          declares nothing valid to approve or no longer matches the reviewed fingerprint.
  */
-export function approveRepoDevConfig(repoPath: string): boolean {
+export function approveRepoDevConfig(repoPath: string, expectedFingerprint?: string): boolean {
   const config = readValidatedRepoDevConfig(repoPath);
   if (config === null) return false;
 
-  recordRepoDevConfigApproval(repoPath, computeRepoDevConfigFingerprint(config));
+  const fingerprint = computeRepoDevConfigFingerprint(config);
+  if (expectedFingerprint !== undefined && fingerprint !== expectedFingerprint) return false;
+
+  recordRepoDevConfigApproval(repoPath, fingerprint);
   return true;
 }
 

@@ -14,7 +14,7 @@ If you only have a few minutes, skim **30-Second Setup** and **Lanes**, then pic
 
 ## 30-Second Setup
 
-**Prerequisites:** **Node 22** (`.nvmrc` pins `22`; `engines.node` is `>=22.0.0`, and every workflow runs `node-version: '22'`) and **pnpm 10** (`packageManager` pins `pnpm@10.33.0`). `pnpm-lock.yaml` is `lockfileVersion: '9.0'`, which pnpm 8 cannot read — the `engines.pnpm: >=8.0.0` field is stale. Run `corepack enable` and pnpm will pick up the pinned version for you.
+**Prerequisites:** **Node 22** (`.nvmrc` pins `22`; `engines.node` is `>=22.0.0`, and every workflow runs `node-version: '22'`) and **pnpm 10** (`packageManager` pins `pnpm@10.33.0`; `engines.pnpm` requires `>=10.0.0`). The minimum pnpm version was raised from 8 to 10 to match the toolchain used in CI. Run `corepack enable` and pnpm will pick up the pinned version for you.
 
 ```bash
 # 1. Clone

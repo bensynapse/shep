@@ -12,8 +12,7 @@
  * - Only a line that *starts* with a verdict marker counts. Prose that
  *   merely mentions "verdict: approve" while rejecting ("I cannot give
  *   verdict: approve here") is not a verdict.
- * - The LAST verdict line wins, matching the sibling `parseCiWatchResult`
- *   convention, so a model that revises itself is read correctly.
+ * - Repeated identical verdict lines agree and retain that verdict.
  * - Two DIFFERENT verdict lines anywhere means the response is ambiguous —
  *   that escalates to a human instead of picking one.
  * - No verdict line at all keeps the non-binding default, `advise`.

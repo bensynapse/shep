@@ -323,6 +323,23 @@ describe('request guard — page requests', () => {
 });
 
 describe('request guard — externally authenticated webhooks', () => {
+  it.each([
+    '/api/webhooks/github/../../terminal',
+    '/api/whatsapp/webhook/../../terminal',
+    '/api/webhooks/github/%2e%2e/%2e%2e/terminal',
+    '/api/whatsapp/webhook/%2e%2e%2f%2e%2e%2fterminal',
+    '/api/webhooks/github/..\\..\\terminal',
+    '/api/webhooks/github/other',
+  ])('does not exempt a traversal or unauthenticated child route: %s', (pathname) => {
+    expect(evaluateRequest(makeRequest({ pathname }), POLICY)).toMatchObject({
+      kind: 'deny',
+      reason: DENY_REASON.MissingCredential,
+    });
+    expect(
+      evaluateRequest(makeRequest({ pathname, host: 'tunnel.trycloudflare.com' }), POLICY)
+    ).toMatchObject({ kind: 'deny', reason: DENY_REASON.HostNotAllowed });
+  });
+
   it.each(EXTERNALLY_AUTHENTICATED_PATHS)(
     'lets %s through unauthenticated (it verifies its own HMAC)',
     (pathname) => {

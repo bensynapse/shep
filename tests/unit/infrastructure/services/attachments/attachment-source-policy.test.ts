@@ -15,7 +15,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, sep } from 'node:path';
+import { basename, delimiter, join, sep } from 'node:path';
 import {
   ATTACHMENT_MAX_FILE_SIZE,
   ATTACHMENT_ROOTS_ENV,
@@ -72,7 +72,7 @@ describe('attachment source path policy', () => {
 
     it('rejects a traversal that climbs out of the root', () => {
       writeFixture(outside, 'secret.md');
-      const traversal = join(root, '..', '..', 'etc', 'passwd');
+      const traversal = `${root}${sep}..${sep}${basename(outside)}${sep}secret.md`;
 
       const result = validateAttachmentSourcePath(traversal, [root]);
 
@@ -219,25 +219,24 @@ describe('attachment source path policy', () => {
     it('defaults to the home directory', () => {
       delete process.env[ATTACHMENT_ROOTS_ENV];
 
-      const roots = resolveAttachmentRoots('/home/tester');
+      const roots = resolveAttachmentRoots(root);
 
-      expect(roots).toEqual(['/home/tester']);
+      expect(roots).toEqual([root]);
     });
 
     it('accepts extra roots from the environment', () => {
-      process.env[ATTACHMENT_ROOTS_ENV] = `${root}${IS_WINDOWS ? ';' : ':'}${outside}`;
+      process.env[ATTACHMENT_ROOTS_ENV] = `${root}${delimiter}${outside}`;
 
-      const roots = resolveAttachmentRoots('/home/tester');
+      const home = join(root, 'home');
+      const roots = resolveAttachmentRoots(home);
 
-      expect(roots).toContain(root);
-      expect(roots).toContain(outside);
-      expect(roots).toContain('/home/tester');
+      expect(roots).toEqual([home, root, outside]);
     });
 
     it('ignores blank entries', () => {
-      process.env[ATTACHMENT_ROOTS_ENV] = IS_WINDOWS ? ';;' : '::';
+      process.env[ATTACHMENT_ROOTS_ENV] = delimiter.repeat(2);
 
-      expect(resolveAttachmentRoots('/home/tester')).toEqual(['/home/tester']);
+      expect(resolveAttachmentRoots(root)).toEqual([root]);
     });
   });
 

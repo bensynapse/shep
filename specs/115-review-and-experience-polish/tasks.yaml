@@ -91,6 +91,29 @@ tasks:
         - Repair verified shared-component and workflow defects
       refactor:
         - Reuse design-system primitives and verify every affected consumer
+  - id: task-6
+    phaseId: phase-6
+    title: Close PR review findings and verify the final pushed CI matrix
+    state: WIP
+    dependencies:
+      - task-5
+    acceptanceCriteria:
+      - Both Linux desktop variants package successfully
+      - Attachment and diagnostics tests use portable fixtures and platform contracts
+      - Populated Control Center meets target-size checks in both themes
+      - Repository dev commands can be reviewed and explicitly approved from the CLI
+      - Webhook authentication exceptions reject path traversal
+      - Dependency installation logs preserve UTF-8 across chunks
+      - Documentation and PR evidence match current behavior and required tooling
+      - Every required CI check passes on the final pushed commit
+    tdd:
+      red:
+        - Preserve CI failure evidence and reproduce accessibility and packaging failures
+        - Add failing traversal, UTF-8 and CLI consent regression tests
+      green:
+        - Repair naming, portable fixtures, control sizing and reviewed behavior
+      refactor:
+        - Reuse shared stream parsing and approval validation; verify local gates and remote CI
 content: >
   ## Acceptance
 
@@ -99,10 +122,10 @@ content: >
   claim of universal correctness is implied.
 
 
-  ## Completed verification
+  ## Verification before the CI follow-up
 
 
-  The latest full suites passed 1,062 unit files / 12,631 tests and 152 integration files / 1,749
+  The earlier full suites passed 1,062 unit files / 12,631 tests and 152 integration files / 1,749
   tests with no expected failures. All 73 browser scenarios passed without skips. The UI review
   recorded 43 routes in 172 light/dark desktop/phone views, 32 additional viewport checks and 13
   interaction groups. Release and Storybook builds, root and web typechecks, lint, formatting,
@@ -116,4 +139,13 @@ content: >
   traversal regressions pass with pinned local patches; four raw version-based audit matches
   remain visible and documented. See [the earlier review record](evidence/review-report.yaml) for
   those fixes, provenance and environment limits.
+
+
+  ## CI and review follow-up
+
+
+  The September 21 review identified four failing remote jobs and five additional findings. Their
+  repairs, red/green evidence and current verification are recorded in
+  [the CI follow-up record](evidence/ci-review-followup.yaml). Remote acceptance remains tied to
+  every applicable check on the final pushed head.
 totalEstimate: L

@@ -10,6 +10,7 @@ export function seedUiExperience() {
   const db = openShepDb();
   const prefix = `ui-e2e-${randomUUID().slice(0, 8)}`;
   const repositoryPath = mkdtempSync(join(tmpdir(), 'shep-ui-experience-'));
+  const standalonePath = mkdtempSync(join(tmpdir(), 'shep-ui-standalone-'));
   execFileSync('git', ['init', '-b', 'ui-review'], { cwd: repositoryPath, stdio: 'ignore' });
   writeFileSync(join(repositoryPath, 'README.md'), '# Browser review fixture\n');
   const now = Date.now();
@@ -17,6 +18,7 @@ export function seedUiExperience() {
   const ids = {
     application: `${prefix}-app`,
     repository: `${prefix}-repo`,
+    standaloneRepository: `${prefix}-standalone-repo`,
     feature: `${prefix}-feature`,
     project: `${prefix}-project`,
     state: `${prefix}-state`,
@@ -29,6 +31,15 @@ export function seedUiExperience() {
     ).run(...Object.values(values));
   }
   db.transaction(() => {
+    // A repository without an application renders RepositoryNode. Seeding only
+    // application-backed repos missed its scaled toolbar targets in isolation.
+    insert('repositories', {
+      id: ids.standaloneRepository,
+      name: 'UI review standalone repository',
+      path: standalonePath,
+      created_at: now,
+      updated_at: now,
+    });
     insert('applications', {
       id: ids.application,
       name: 'UI review application',
@@ -104,6 +115,7 @@ export function seedUiExperience() {
           ['pm_projects', ids.project],
           ['features', ids.feature],
           ['repositories', ids.repository],
+          ['repositories', ids.standaloneRepository],
           ['applications', ids.application],
         ]) {
           db.prepare(`DELETE FROM ${table} WHERE id = ?`).run(id);
@@ -111,6 +123,7 @@ export function seedUiExperience() {
       })();
       db.close();
       rmSync(repositoryPath, { recursive: true, force: true });
+      rmSync(standalonePath, { recursive: true, force: true });
     },
   };
 }

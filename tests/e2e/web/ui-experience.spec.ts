@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test';
 import { expectAccessible } from './helpers/ui-accessibility';
 
-// These checks exercise rendering and navigation only; no installed agent is
-// invoked and no user configuration or project is changed.
+// These checks invoke no installed agent. Workflow coverage temporarily enables
+// its feature flag through the UI and restores the previous value afterward.
 test.describe('web experience regressions', () => {
   test('agent picker and search stay accessible while open', async ({ page }) => {
     await page.goto('/settings');
@@ -33,19 +33,34 @@ test.describe('web experience regressions', () => {
   ]) {
     test(`${route} has no automated accessibility violations in dark mode`, async ({ page }) => {
       await page.addInitScript(() => localStorage.setItem('shep-theme', 'dark'));
-      await page.goto(route);
-      test.skip(
-        route === '/workflows' && new URL(page.url()).pathname !== route,
-        'Scheduled workflows must be enabled before the test server starts'
-      );
-      expect(new URL(page.url()).pathname).toBe(route);
-      await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-      if (route === '/settings') {
-        await expect(
-          page.getByRole('combobox', { name: 'Agent and model', exact: true })
-        ).toBeEnabled();
+      let restoreWorkflows = false;
+      if (route === '/workflows') {
+        await page.goto('/settings');
+        const toggle = page.getByTestId('switch-flag-scheduledWorkflows');
+        await expect(toggle).toBeEnabled();
+        if ((await toggle.getAttribute('data-state')) === 'unchecked') {
+          restoreWorkflows = true;
+          await toggle.click();
+          await expect(page.getByRole('status').filter({ hasText: 'Saved' })).toBeVisible();
+        }
       }
-      await expectAccessible(page);
+      try {
+        await page.goto(route);
+        expect(new URL(page.url()).pathname).toBe(route);
+        await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+        if (route === '/settings') {
+          await expect(
+            page.getByRole('combobox', { name: 'Agent and model', exact: true })
+          ).toBeEnabled();
+        }
+        await expectAccessible(page);
+      } finally {
+        if (restoreWorkflows) {
+          await page.goto('/settings');
+          await page.getByTestId('switch-flag-scheduledWorkflows').click();
+          await expect(page.getByRole('status').filter({ hasText: 'Saved' })).toBeVisible();
+        }
+      }
     });
   }
 
