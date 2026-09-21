@@ -1,5 +1,13 @@
 # Lessons Learned
 
+## Review the complete report and the complete interaction
+
+Inspect a supplied recording's audio as well as its frames before narrowing the
+reported problem. Check long pages halfway down and at the bottom in both themes;
+an above-the-fold screenshot misses a background that ends at the first viewport.
+Exercise global shortcuts together, including extra modifiers and held keys, so
+one gesture cannot open competing panels or repeatedly toggle the same panel.
+
 ## Exercise native compilation independently of caches
 
 Green PR jobs can hide an incompatible native build toolchain when they download
