@@ -19,14 +19,18 @@ jobs:
           node-version: '22'
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm build:cli
-      - name: Repeat duplicate feature creation with failure diagnostics
+      - name: Build Windows SQLite from source
+        env:
+          npm_config_build_from_source: 'true'
+        run: pnpm rebuild better-sqlite3
+      - run: pnpm build:release
+      - name: Repeat full CLI suite under the original parallel workload
         env:
           SHEP_E2E_USE_DIST: '1'
         shell: pwsh
         run: |
-          for ($attempt = 1; $attempt -le 20; $attempt++) {
-            Write-Output "Duplicate-feature attempt $attempt"
-            pnpm exec vitest run tests/e2e/cli/feat.test.ts -t 'duplicate feature' --reporter=verbose
+          for ($attempt = 1; $attempt -le 3; $attempt++) {
+            Write-Output "Full CLI suite attempt $attempt"
+            pnpm exec vitest run tests/e2e/cli --reporter=verbose
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           }
