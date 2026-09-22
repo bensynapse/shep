@@ -112,9 +112,8 @@ describe('CLI: feat', { timeout: MULTI_STEP_TEST_TIMEOUT_MS }, () => {
         timeout: MULTI_STEP_CLI_TIMEOUT_MS,
       });
 
-      const result = runner.run(`feat new "Add user authentication" --repo ${tempRepo}`);
+      const result = runner.runOrThrow(`feat new "Add user authentication" --repo ${tempRepo}`);
 
-      expect(result.success).toBe(true);
       expect(result.stdout).toContain('Feature created');
       expect(result.stdout).toMatch(/ID:\s+[0-9a-f-]{36}/);
       expect(result.stdout).toContain('feat/add-user-authentication');
@@ -221,9 +220,8 @@ describe('CLI: feat', { timeout: MULTI_STEP_TEST_TIMEOUT_MS }, () => {
         timeout: MULTI_STEP_CLI_TIMEOUT_MS,
       });
 
-      const result = runner.run('feat ls');
+      const result = runner.runOrThrow('feat ls');
 
-      expect(result.success).toBe(true);
       expect(result.stdout).toMatch(/no features/i);
     });
 
@@ -235,9 +233,8 @@ describe('CLI: feat', { timeout: MULTI_STEP_TEST_TIMEOUT_MS }, () => {
 
       runner.runOrThrow(`feat new "Listed feature" --repo ${tempRepo}`);
 
-      const result = runner.run('feat ls');
+      const result = runner.runOrThrow('feat ls');
 
-      expect(result.success).toBe(true);
       expect(result.stdout).toContain('Features');
       expect(result.stdout).toContain('Listed Feature');
     });
@@ -250,9 +247,8 @@ describe('CLI: feat', { timeout: MULTI_STEP_TEST_TIMEOUT_MS }, () => {
 
       runner.runOrThrow(`feat new "Repo filter test" --repo ${tempRepo}`);
 
-      const result = runner.run(`feat ls --repo ${tempRepo}`);
+      const result = runner.runOrThrow(`feat ls --repo ${tempRepo}`);
 
-      expect(result.success).toBe(true);
       expect(result.stdout).toContain('Repo Filter Test');
     });
   });
@@ -267,9 +263,8 @@ describe('CLI: feat', { timeout: MULTI_STEP_TEST_TIMEOUT_MS }, () => {
       const createResult = runner.runOrThrow(`feat new "Show detail test" --repo ${tempRepo}`);
       const featureId = extractFeatureId(createResult.stdout);
 
-      const result = runner.run(`feat show ${featureId}`);
+      const result = runner.runOrThrow(`feat show ${featureId}`);
 
-      expect(result.success).toBe(true);
       expect(result.stdout).toContain(featureId);
       expect(result.stdout).toContain('Show Detail Test');
       expect(result.stdout).toContain('feat/show-detail-test');
