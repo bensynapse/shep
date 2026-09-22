@@ -2415,6 +2415,11 @@ Rules:
    somewhere a human looks daily.
 4. **Verify the build context, not just the Dockerfile text.** `.dockerignore` decides whether
    a COPY can resolve at all; confirm the file lands at the exact path the hook invokes.
+5. **Dependency patches are install inputs.** Copy `patches/` before every install stage
+   when `pnpm.patchedDependencies` references it; `--ignore-scripts` does not skip patches.
+6. **Probe native modules in the final runtime.** With scripts disabled, rebuilding only
+   `better-sqlite3` leaves `node-pty` unavailable. Exercise a database query, terminal spawn,
+   and web readiness as the image's default user after the build succeeds.
 
 ## An issue reference in a commit body makes commitlint fail `footer-leading-blank`
 
