@@ -20,8 +20,9 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Capture native SQLite read-write-open-close error codes
-        run: node scripts/diagnose-windows-sqlite.mjs
+        run: node scripts/diagnose-windows-sqlite-exit.mjs
   reproduce:
+    if: false
     runs-on: windows-2022
     timeout-minutes: 20
     steps:
