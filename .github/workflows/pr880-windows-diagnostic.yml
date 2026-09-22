@@ -19,6 +19,9 @@ jobs:
           node-version: '22'
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm build:cli
+      - name: Verify process exit regression
+        run: pnpm exec vitest run tests/integration/infrastructure/persistence/sqlite/connection-exit.test.ts tests/unit/infrastructure/persistence/sqlite/connection-lifecycle.test.ts
       - name: Capture native SQLite read-write-open-close error codes
         run: node scripts/diagnose-windows-sqlite-exit.mjs
   reproduce:

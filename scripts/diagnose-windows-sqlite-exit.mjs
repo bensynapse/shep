@@ -2,14 +2,20 @@ import Database from 'better-sqlite3';
 import { fork } from 'node:child_process';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 if (process.argv[2]) {
   let db;
   let code = 'OK';
   try {
-    db = new Database(process.argv[2], { timeout: 0 });
+    if (process.argv[3] === 'managed') {
+      process.env.SHEP_HOME = dirname(process.argv[2]);
+      const { getSQLiteConnection } = await import('../dist/packages/core/src/infrastructure/persistence/sqlite/connection.js');
+      db = await getSQLiteConnection();
+    } else {
+      db = new Database(process.argv[2], { timeout: 0 });
+    }
     db.pragma('quick_check');
     db.pragma('journal_mode = WAL');
     db.pragma('synchronous = NORMAL');
@@ -24,7 +30,7 @@ if (process.argv[2]) {
   if (process.argv[3] === 'clean') db?.close();
   process.send(code, () => process.exit(0));
 } else {
-  for (const mode of ['abrupt', 'clean']) {
+  for (const mode of ['managed']) {
     const dir = mkdtempSync(join(tmpdir(), 'shep-windows-sqlite-exit-'));
     const path = join(dir, 'data');
     const db = new Database(path);
@@ -42,6 +48,7 @@ if (process.argv[2]) {
     }));
     const check = new Database(path);
     console.log('SQLITE_EXIT_COUNTS', mode, JSON.stringify(counts), JSON.stringify(check.pragma('quick_check')));
+    if (counts.OK !== 300) process.exitCode = 1;
     check.close();
     rmSync(dir, {recursive:true, force:true});
   }
