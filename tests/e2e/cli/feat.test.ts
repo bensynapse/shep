@@ -192,11 +192,11 @@ describe('CLI: feat', { timeout: MULTI_STEP_TEST_TIMEOUT_MS }, () => {
         timeout: MULTI_STEP_CLI_TIMEOUT_MS,
       });
 
-      const first = runner.run(`feat new "Duplicate test" --repo ${tempRepo}`);
-      expect(first.success).toBe(true);
+      const first = runner.runOrThrow(`feat new "Duplicate test" --repo ${tempRepo}`);
 
-      const second = runner.run(`feat new "Duplicate test" --repo ${tempRepo}`);
-      expect(second.success).toBe(true);
+      const second = runner.runOrThrow(`feat new "Duplicate test" --repo ${tempRepo}`);
+      expect(extractFeatureId(second.stdout)).not.toBe(extractFeatureId(first.stdout));
+      expect(second.stdout).toMatch(/feat\/duplicate-test-[0-9a-f]{6}/);
       // Should use a suffixed slug and warn about it
       const output = `${second.stdout} ${second.stderr}`;
       expect(output).toMatch(/already exists.*using/i);

@@ -1,0 +1,32 @@
+name: PR 880 Windows reproduction
+
+on:
+  push:
+    branches: [ci/pr880-windows-diagnostic]
+
+permissions:
+  contents: read
+
+jobs:
+  reproduce:
+    runs-on: windows-2022
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build:cli
+      - name: Repeat duplicate feature creation with failure diagnostics
+        env:
+          SHEP_E2E_USE_DIST: '1'
+        shell: pwsh
+        run: |
+          for ($attempt = 1; $attempt -le 20; $attempt++) {
+            Write-Output "Duplicate-feature attempt $attempt"
+            pnpm exec vitest run tests/e2e/cli/feat.test.ts -t 'duplicate feature' --reporter=verbose
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
