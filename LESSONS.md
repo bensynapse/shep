@@ -1,5 +1,15 @@
 # Lessons Learned
 
+## Exercise real concurrency and retain subprocess errors
+
+`Promise.resolve(runner.run(...))` still runs each synchronous CLI command in
+sequence. Use asynchronous child processes sharing an isolated database to test
+startup races. SQLite can return `SQLITE_BUSY` during WAL startup without calling
+its busy handler; retry initialization within a deadline and close failed handles.
+Use `runOrThrow` for successful CLI scenarios so CI retains the command and stderr.
+Serialize the settings existence check and insert in one immediate transaction;
+if another startup wins, load its persisted settings instead of replacing them.
+
 ## Review the complete report and the complete interaction
 
 Inspect a supplied recording's audio as well as its frames before narrowing the
