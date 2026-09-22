@@ -8,6 +8,19 @@ permissions:
   contents: read
 
 jobs:
+  native:
+    runs-on: windows-2022
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Capture native SQLite read-write-open-close error codes
+        run: node scripts/diagnose-windows-sqlite.mjs
   reproduce:
     runs-on: windows-2022
     timeout-minutes: 20
@@ -19,24 +32,14 @@ jobs:
           node-version: '22'
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Capture native SQLite open-close error codes
-        run: node scripts/diagnose-windows-sqlite.mjs
-      - name: Report Docker engine platform
-        shell: pwsh
-        run: |
-          docker info --format '{{.OSType}}'
-          if ($LASTEXITCODE -ne 0) { Write-Output 'Docker engine is unavailable' }
-          exit 0
       - run: pnpm build:cli
-      - name: Verify startup lock and settings regressions
-        run: pnpm exec vitest run tests/unit/infrastructure/persistence/sqlite/connection-lifecycle.test.ts tests/unit/infrastructure/persistence/sqlite/connection-native-binding.test.ts tests/unit/application/use-cases/initialize-settings.use-case.test.ts tests/integration/infrastructure/repositories/sqlite-settings.repository.test.ts
-      - name: Repeat feature CLI startup on Windows
+      - name: Repeat full CLI workload on Windows
         env:
           SHEP_E2E_USE_DIST: '1'
         shell: pwsh
         run: |
           for ($attempt = 1; $attempt -le 10; $attempt++) {
             Write-Output "Feature startup attempt $attempt"
-            pnpm exec vitest run tests/e2e/cli/feat.test.ts --reporter=verbose
+            pnpm run test:e2e:cli
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           }

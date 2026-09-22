@@ -14,6 +14,7 @@ if (process.argv[2]) {
       db.pragma('quick_check');
       db.pragma('journal_mode = WAL');
       db.prepare('SELECT * FROM probe').all();
+      db.exec('BEGIN IMMEDIATE; UPDATE probe SET value = value + 1; COMMIT;');
     } catch (error) {
       codes[error.code] = (codes[error.code] ?? 0) + 1;
       if (!error.code?.startsWith('SQLITE_BUSY') && codes[error.code] <= 3) {
@@ -22,6 +23,7 @@ if (process.argv[2]) {
     } finally {
       db?.close();
     }
+    if (i % 3 === 0) Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 1);
   }
   process.send(codes);
 } else {
@@ -29,7 +31,7 @@ if (process.argv[2]) {
   const path = join(dir, 'data');
   const db = new Database(path);
   db.pragma('journal_mode = WAL');
-  db.exec('CREATE TABLE probe (id INTEGER PRIMARY KEY); INSERT INTO probe VALUES (1)');
+  db.exec('CREATE TABLE probe (id INTEGER PRIMARY KEY, value INTEGER); INSERT INTO probe VALUES (1,0)');
   db.close();
   const reports = await Promise.all(Array.from({length: 8}, () => new Promise((resolve, reject) => {
     const child = fork(fileURLToPath(import.meta.url), [path]);
