@@ -19,6 +19,8 @@ jobs:
           node-version: '22'
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Capture native SQLite open-close error codes
+        run: node scripts/diagnose-windows-sqlite.mjs
       - name: Report Docker engine platform
         shell: pwsh
         run: |
@@ -28,13 +30,13 @@ jobs:
       - run: pnpm build:cli
       - name: Verify startup lock and settings regressions
         run: pnpm exec vitest run tests/unit/infrastructure/persistence/sqlite/connection-lifecycle.test.ts tests/unit/infrastructure/persistence/sqlite/connection-native-binding.test.ts tests/unit/application/use-cases/initialize-settings.use-case.test.ts tests/integration/infrastructure/repositories/sqlite-settings.repository.test.ts
-      - name: Repeat simultaneous CLI startup on Windows
+      - name: Repeat feature CLI startup on Windows
         env:
           SHEP_E2E_USE_DIST: '1'
         shell: pwsh
         run: |
-          for ($attempt = 1; $attempt -le 20; $attempt++) {
-            Write-Output "Concurrent startup attempt $attempt"
-            pnpm exec vitest run tests/e2e/cli/settings-initialization.test.ts -t 'concurrent CLI' --reporter=verbose
+          for ($attempt = 1; $attempt -le 10; $attempt++) {
+            Write-Output "Feature startup attempt $attempt"
+            pnpm exec vitest run tests/e2e/cli/feat.test.ts --reporter=verbose
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           }

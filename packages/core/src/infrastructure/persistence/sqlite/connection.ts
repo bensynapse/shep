@@ -113,6 +113,7 @@ async function initializeConnection(): Promise<Database.Database> {
     try {
       return configureConnection(dbPath);
     } catch (error) {
+      if (!isSqliteBusyError(error)) console.error('SQLITE_STARTUP_DIAGNOSTIC', JSON.stringify({ code: (error as {code?: string}).code, message: String(error), dbPath, pid: process.pid }));
       if (!isSqliteBusyError(error)) throw error;
 
       // Switching journal modes and recovering/closing a WAL can report BUSY
